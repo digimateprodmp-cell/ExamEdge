@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction History | Gurumantra</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css"> <style>
+        /* Best UI Tweaks */
+        .history-card { border-radius: 20px; border: none; transition: 0.3s; }
+        .trx-item { 
+            display: flex; align-items: center; 
+            padding: 15px; border-radius: 15px; 
+            background: #f9f9f9; border: 1px solid #eee; margin-bottom: 12px;
+        }
+        .icon-box { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 20px; }
+        .credit-bg { background: #e8f5e9; color: #2e7d32; }
+        .debit-bg { background: #ffebee; color: #c62828; }
+        .nav-pills .nav-link.active { background-color: #dc3f3f !important; border-radius: 50px; }
+        .nav-pills .nav-link { color: #666; font-weight: 600; border-radius: 50px; padding: 8px 25px; }
+    </style>
+</head>
+<body class="bg-light">
+
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            
+            <div class="coin-balance-card mb-4 text-center p-5" style="background: linear-gradient(135deg, #dc3f3f, #a10f0f); border-radius: 25px; color: white;">
+                <p class="mb-1 opacity-75">Total Wallet Balance</p>
+                <h1 class="fw-bold mb-0"><i class="bi bi-coin text-warning"></i> 1,250</h1>
+            </div>
+
+            <div class="card history-card shadow-sm p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">History</h5>
+                    <ul class="nav nav-pills" id="pills-tab">
+                        
+                        <li class="nav-item"><button class="nav-link" id="creditBtn" onclick="showHistory('credit', this)">Credit</button></li>
+                        <li class="nav-item"><button class="nav-link" id="debitBtn" onclick="showHistory('debit', this)">Debit</button></li>
+                    </ul>
+                </div>
+
+                <div id="historyList">
+                    <div class="trx-item" data-type="credit">
+                        <div class="icon-box credit-bg"><i class="bi bi-plus-circle-fill"></i></div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 fw-bold">Bonus Reward</h6>
+                            <small class="text-muted">Daily login • 12 Feb 2026</small>
+                        </div>
+                        <div class="text-success fw-bold">+50</div>
+                    </div>
+
+                    <div class="trx-item" data-type="debit">
+                        <div class="icon-box debit-bg"><i class="bi bi-dash-circle-fill"></i></div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 fw-bold">SSC Course Purchase</h6>
+                            <small class="text-muted">Payment • 10 Feb 2026</small>
+                        </div>
+                        <div class="text-danger fw-bold">-500</div>
+                    </div>
+
+                    <div class="trx-item" data-type="credit">
+                        <div class="icon-box credit-bg"><i class="bi bi-plus-circle-fill"></i></div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 fw-bold">Referral Earned</h6>
+                            <small class="text-muted">Invite Friend • 08 Feb 2026</small>
+                        </div>
+                        <div class="text-success fw-bold">+100</div>
+                    </div>
+                </div>
+
+                <div id="noData" class="text-center py-5 d-none">
+                    <i class="bi bi-folder-x display-1 text-muted"></i>
+                    <p class="mt-3 text-muted">No transactions found here!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+    function showHistory(type, btn) {
+        const items = document.querySelectorAll('.trx-item');
+        const buttons = document.querySelectorAll('.nav-link');
+        let found = false;
+
+        // 1. Buttons ki active class handle karein
+        buttons.forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+
+        // 2. STRICT FILTERING: Sirf selected type dikhana hai
+        items.forEach(item => {
+            const itemType = item.getAttribute('data-type');
+            
+            // Yahan humne 'all' ka logic hata diya hai as per your request
+            if (itemType === type) {
+                item.style.setProperty('display', 'flex', 'important');
+                found = true;
+            } else {
+                item.style.setProperty('display', 'none', 'important');
+            }
+        });
+
+        // 3. No Data Message toggle
+        const noData = document.getElementById('noData');
+        if (noData) {
+            if (!found) noData.classList.remove('d-none');
+            else noData.classList.add('d-none');
+        }
+    }
+
+    // --- DASHBOARD SYNC ON PAGE LOAD ---
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab'); // URL se 'credit' ya 'debit' uthayega
+
+        // Page load hote hi check karega Dashboard se kya instruction aaya hai
+        if (tab === 'credit') {
+            const creditBtn = document.getElementById('creditBtn');
+            showHistory('credit', creditBtn);
+        } 
+        else if (tab === 'debit') {
+            const debitBtn = document.getElementById('debitBtn');
+            showHistory('debit', debitBtn);
+        } 
+        else {
+            // Agar bina kisi parameter ke page khule, toh default Credit dikhao
+            showHistory('credit', document.getElementById('creditBtn'));
+        }
+    });
+</script>
+</body>
+</html>

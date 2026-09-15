@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test-mela</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+    />
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div id="scrollBar"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top py-3">
+      <div class="container">
+        <!-- LOGO -->
+        <a
+          class="navbar-brand d-flex align-items-center gap-2"
+          href="index.html"
+        >
+          <img src="images/logo.png" alt="Logo" class="main-logo" />
+        </a>
+
+        <!-- TOGGLER -->
+        <button
+          class="navbar-toggler border-0"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- MENU -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto align-items-center gap-lg-2">
+            <li class="nav-item">
+              <a class="nav-link" href="my-test-series.html">Test Series </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Free PDF</a>
+            </li>
+            <!-- <li class="nav-item">
+              <a class="nav-link" href="current-affairs.html"
+                >General Awareness</a
+              >
+            </li> -->
+            <li class="nav-item">
+              <a class="nav-link" href="blogs.html">Blogs</a>
+            </li>
+
+            <li class="nav-item">
+            <a class="nav-link" href="login.html">Login</a>
+            </li>
+
+           <!-- <li class="nav-item">
+           <a class="nav-link" href="javascript:void(0)">Signup</a>
+            </li> -->
+
+
+            <!-- DROPDOWN -->
+            <li class="nav-item dropdown ms-lg-2">
+              <a
+                class="nav-link dropdown-toggle more-link"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                More Services
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#">Coins</a></li>
+                
+                <li><a class="dropdown-item" href="#">Scholarship</a></li>
+                <li><a class="dropdown-item" href="profile.html">Profile</a></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a class="dropdown-item" href="#">Purchase / My Order</a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <section id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+      <div class="carousel-inner">
+        <div class="carousel-item active">
+          <img
+            src="images/slider/slider1.png"
+            class="d-block w-100 hero-img"
+            alt="Slide 1"
+          />
+        </div>
+        <div class="carousel-item">
+          <img
+            src="images/slider/slider2.png"
+            class="d-block w-100 hero-img"
+            alt="Slide 2"
+          />
+        </div>
+        <div class="carousel-item">
+          <img
+            src="images/slider/slider3.png"
+            class="d-block w-100 hero-img"
+            alt="Slide 3"
+          />
+        </div>
+      </div>
+      <button
+        class="carousel-control-prev"
+        type="button"
+        data-bs-target="#heroCarousel"
+        data-bs-slide="prev"
+      >
+        <span
+          class="carousel-control-prev-icon bg-dark-50 rounded-circle"
+        ></span>
+      </button>
+      <button
+        class="carousel-control-next"
+        type="button"
+        data-bs-target="#heroCarousel"
+        data-bs-slide="next"
+      >
+        <span
+          class="carousel-control-next-icon bg-dark-50 rounded-circle"
+        ></span>
+      </button>
+    </section>
+
+    <section class="gm-marquee">
+      <div class="container">
+        <div class="marquee-wrapper">
+          <div class="marquee-content">
+            <span>🔥 UPSC 2026 Test Series Launched</span>
+            <span>📢 Daily Current Affairs – Updated Every Morning</span>
+            <span>🎯 Answer Writing Practice with Expert Evaluation</span>
+            <span>🎓 Scholarship Program – Register Now</span>
+            <span>💰 Earn Coins & Unlock Premium Content Free</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="container my-5 py-5" data-aos="fade-up">
+      <div class="premium-card p-4">
+        <div class="row align-items-center g-4">
+          <!-- LEFT : SHARE & EARN -->
+          <div class="col-md-6">
+            <div class="coin-card h-100">
+              <img
+                src="images/icons/referral.png"
+                alt="Referral"
+                class="coin-icon mb-3"
+              />
+              <h5 class="fw-semibold mb-2">Share & Earn Referral Code</h5>
+              <p class="text-muted small mb-4">
+                Invite friends & earn coins on every successful registration.
+              </p>
+              <button class="btn btn-orange w-100 rounded-pill fw-semibold">
+                <i class="bi bi-share-fill me-2"></i> Share Now
+              </button>
+            </div>
+          </div>
+
+          <!-- RIGHT : TOTAL COINS -->
+          <div class="col-md-6">
+            <div class="coin-card h-100 text-center">
+              <img
+                src="images/icons/coins.png"
+                alt="Coins"
+                class="coin-icon mb-3"
+              />
+              <h5 class="fw-semibold mb-1">Total Coins</h5>
+              <h2 class="fw-bold text-orange mb-0">120</h2>
+              <p class="text-muted small">Available Balance</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+
+
+    <section class="container my-5" data-aos="fade-up">
+  <div class="row g-4">
+
+  
+
+  
+
+
+    <section class="container my-5" data-aos="fade-up">
+      <div class="row g-4 align-items-stretch">
+        <div class="col-lg-8">
+          <div
+            class="p-4 bg-white rounded-4 shadow-sm border-start border-orange border-5 h-100"
+          >
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-orange-soft p-2 rounded-3 me-3">
+                <i class="bi bi-mortarboard-fill text-orange fs-3"></i>
+              </div>
+              <div>
+                <h4 class="fw-bold mb-0">Scholarship Register</h4>
+                <p class="text-muted small mb-0">
+                  Enter details to verify and join the program
+                </p>
+              </div>
+            </div>
+            <form class="row g-2">
+              <div class="col-md-8">
+                <input
+                  type="text"
+                  class="form-control form-control-lg rounded-pill border-2"
+                  placeholder="Email or Mobile Number"
+                />
+                 <p class="text-muted small mb-0">
+                 Verify email after registration who not Register earlier 
+                </p>
+              </div>
+              <div class="col-md-3">
+                <button
+                  type="submit"
+                  class="btn btn-orange w-100 btn-lg rounded-pill"
+                >
+                  Verify  Now
+                </button>
+              </div>
+              
+            </form>
+          </div>
+        </div>
+    <!-- <div class="col-lg-4">
+    <div class="p-4 bg-dark rounded-4 shadow-sm h-100 d-flex flex-column justify-content-center align-items-center text-center">
+        <i class="bi bi-pencil-square text-orange mb-2" style="font-size: 1.5rem"></i>
+        <h5 class="text-white mb-2">Answer Writing</h5>
+        <a href="answer-writing.html" class="btn btn-outline-orange w-75 rounded-pill py-2 fw-bold">
+            Start writing →
+        </a>
+      </div>
+   </div>
+      </div> -->
+
+      
+    </section>
+
+    <section class="container my-5" data-aos="zoom-in">
+      <div id="adSlider" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          <div class="carousel-item active">
+            <div class="row g-4">
+              <div class="col-md-6 col-12">
+                <img
+                  src="images/ads/ad1.png"
+                  class="ad-img shadow-sm w-100"
+                  alt="Ad 1"
+                />
+              </div>
+              <div class="col-md-6 d-none d-md-block">
+                <img
+                  src="images/ads/ad2.png"
+                  class="ad-img shadow-sm w-100"
+                  alt="Ad 2"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="carousel-item">
+            <div class="row g-4">
+              <div class="col-md-6 col-12">
+                <img
+                  src="images/ads/ad3.png"
+                  class="ad-img shadow-sm w-100"
+                  alt="Ad 3"
+                />
+              </div>
+              <div class="col-md-6 d-none d-md-block">
+                <img
+                  src="images/ads/ad4.png"
+                  class="ad-img shadow-sm w-100"
+                  alt="Ad 4"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <button
+          class="carousel-control-prev"
+          type="button"
+          data-bs-target="#adSlider"
+          data-bs-slide="prev"
+        >
+          <span
+            class="carousel-control-prev-icon bg-orange rounded-circle"
+            aria-hidden="true"
+          ></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button
+          class="carousel-control-next"
+          type="button"
+          data-bs-target="#adSlider"
+          data-bs-slide="next"
+        >
+          <span
+            class="carousel-control-next-icon bg-orange rounded-circle"
+            aria-hidden="true"
+          ></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="container my-5" data-aos="fade-up">
+  <div class="row g-4">
+
+    <!-- Daily Current Affairs -->
+    <div class="col-md-4">
+      <a href="#" class="text-decoration-none">
+        <div
+          class="nav-tile p-4 d-flex align-items-center justify-content-between"
+        >
+          <div class="d-flex align-items-center">
+            <div class="bg-orange-soft p-3 rounded-circle me-3">
+              <i class="bi bi-newspaper text-orange fs-3"></i>
+            </div>
+            <h5 class="fw-bold mb-0 text-dark">Daily Current Affairs </h5>
+          </div>
+          <i class="bi bi-chevron-right fs-5 text-orange"></i>
+        </div>
+      </a>
+    </div>
+
+      <div class="col-md-4">
+      <a href="my-test-series.html" class="text-decoration-none">
+        <div
+          class="nav-tile p-4 d-flex align-items-center justify-content-between"
+        >
+          <div class="d-flex align-items-center">
+            <div class="bg-orange-soft p-3 rounded-circle me-3">
+              <i class="bi bi-newspaper text-orange fs-3"></i>
+            </div>
+            <h5 class="fw-bold mb-0 text-dark"> My Test Series</h5>
+            
+          </div>
+          
+          <i class="bi bi-chevron-right fs-5 text-orange"></i>
+        </div>
+      </a>
+    </div>
+
+
+
+    <!-- Dashboard  -->
+     <div class="col-md-4">
+      <a href="notes.html" class="text-decoration-none">
+        <div
+          class="nav-tile p-4 d-flex align-items-center justify-content-between border-primary-custom"
+        >
+          <div class="d-flex align-items-center">
+            <div class="bg-primary p-3 rounded-circle me-3">
+              <i class="bi bi-speedometer2 text-white fs-3"></i>
+            </div>
+            <h5 class="fw-bold mb-0 text-dark">Notes</h5>
+          </div>
+          <i class="bi bi-chevron-right fs-5 text-primary"></i>
+        </div>
+      </a>
+    </div>
+
+  </div> 
+
+
+  
+</section>
+
+
+    <section class="container my-5 py-4" data-aos="fade-up">
+      <div class="d-flex justify-content-between align-items-end mb-4">
+        <h3 class="fw-semibold">
+          Latest <span class="text-orange">Test Series</span>
+        </h3>
+        <a href="online.html" class="text-orange fw-bold text-decoration-none"
+          >Explore All <i class="bi bi-arrow-right"></i
+        ></a>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="test-card p-4 text-center h-100 shadow-sm border">
+            <div class="test-icon-box mb-4">
+              <img
+                src="images/icons/test1.png"
+                alt="Test 1"
+                class="img-fluid"
+              />
+            </div>
+            <h5 class="mb-2">UPSC Prelims Mock 2026</h5>
+            <button
+              class="btn btn-outline-orange w-100 rounded-pill py-2 "
+            >
+              Join Test
+            </button>
+          </div>
+        </div>
+        <div class="col-md-4 d-none d-md-block extra-test">
+          <div class="test-card p-4 text-center h-100 shadow-sm border">
+            <div class="test-icon-box mb-4">
+              <img
+                src="images/icons/test2.png"
+                alt="Test 2"
+                class="img-fluid"
+              />
+            </div>
+            <h5 class=" mb-2">BPSC Special Mock</h5>
+            <button
+              class="btn btn-outline-orange w-100 rounded-pill py-2 fw-bold"
+            >
+              Join Test
+            </button>
+          </div>
+        </div>
+        <div class="col-md-4 d-none d-md-block extra-test">
+          <div class="test-card p-4 text-center h-100 shadow-sm border">
+            <div class="test-icon-box mb-3">
+              <img
+                src="images/icons/test3.png"
+                alt="Test 3"
+                class="img-fluid"
+              />
+            </div>
+            <h5 class=" mb-3">BPSC Special Mock</h5>
+            <button
+              class="btn btn-outline-orange w-100 rounded-pill py-2 fw-bold"
+            >
+              Join Test
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="bg-dark text-white pt-5 pb-3 mt-5">
+      <div class="container">
+        <div class="row gy-4">
+          <div class="col-lg-4 col-md-6 text-center text-md-start">
+            <h4 class="text-orange fw-bold mb-3">Test Mela</h4>
+            <p class="text-secondary small mb-4">
+              Quality education for every aspirant. Humara maksad hai har
+              student tak behtareen resources pahunchana.
+            </p>
+            <div
+              class="d-flex gap-3 justify-content-center justify-content-md-start"
+            >
+              <a href="#" class="social-btn"
+                ><i class="bi bi-facebook fs-5 text-white"></i
+              ></a>
+              <a href="#" class="social-btn"
+                ><i class="bi bi-instagram fs-5 text-white"></i
+              ></a>
+              <a href="#" class="social-btn"
+                ><i class="bi bi-youtube fs-5 text-white"></i
+              ></a>
+              <a href="#" class="social-btn"
+                ><i class="bi bi-telegram fs-5 text-white"></i
+              ></a>
+            </div>
+          </div>
+          <div class="col-lg-4 col-md-6 text-center text-md-start">
+            <h5 class="fw-bold mb-4 text-white">Quick Links</h5>
+            <div class="row">
+              <div class="col-6">
+                <ul class="list-unstyled">
+                  <li class="mb-2">
+                    <a
+                      href="#"
+                      class="text-secondary text-decoration-none small hover-orange"
+                      >Login</a
+                    >
+                  </li>
+                  <li class="mb-2">
+                    <a
+                      href="#"
+                      class="text-secondary text-decoration-none small hover-orange"
+                      >Logout</a
+                    >
+                  </li>
+                  <li class="mb-2">
+                    <a
+                      href="#"
+                      class="text-secondary text-decoration-none small hover-orange"
+                      >Contact Us</a
+                    >
+                  </li>
+                  <li class="mb-2">
+                    <a
+                      href="#"
+                      class="text-secondary text-decoration-none small hover-orange"
+                      >About Us</a
+                    >
+                  </li>
+                </ul>
+              </div>
+              <div class="col-6">
+                <ul class="list-unstyled">
+                  <li class="mb-2">
+                    <a
+                      href="#"
+                      class="text-secondary text-decoration-none small hover-orange"
+                      >Privacy Policy</a
+                    >
+                  </li>
+                  <li class="mb-2">
+                    <a
+                      href="#"
+                      class="text-secondary text-decoration-none small hover-orange"
+                      >Terms & Conditions</a
+                    >
+                  </li>
+                  <li class="mb-2">
+                    <a
+                      href="#"
+                      class="text-secondary text-decoration-none small hover-orange"
+                      >Refund Policy</a
+                    >
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4 col-md-12 text-center text-md-start">
+            <h5 class="fw-bold mb-4 text-white">Contact Us</h5>
+            <p class="text-secondary small mb-2">
+              <i class="bi bi-geo-alt-fill text-orange me-2"></i> Patna Bihar
+            </p>
+            <p class="text-secondary small mb-2">
+              <i class="bi bi-telephone-fill text-orange me-2"></i> +91
+              9135904639
+            </p>
+            <p class="text-secondary small mb-2">
+              <i class="bi bi-envelope-fill text-orange me-2"></i>
+              support@gurumantra.com
+            </p>
+          </div>
+        </div>
+        <hr class="mt-5 border-secondary opacity-25" />
+        <div class="row align-items-center">
+          <div class="col-md-12 text-center">
+            <p class="small text-secondary mb-0">
+              © 2026 Test Mela. Designed for Excellence. | All Rights Reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

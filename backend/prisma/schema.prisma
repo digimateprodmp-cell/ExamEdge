@@ -1,0 +1,670 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// Enums
+// ============================================================
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+enum Language {
+  EN
+  HI
+}
+
+enum TestType {
+  LIVE
+  PRACTICE
+  PDF
+}
+
+enum TestStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  SUBMITTED
+  AUTO_SUBMITTED
+}
+
+enum EnrollmentSource {
+  PURCHASE
+  COIN
+  COUPON
+  ADMIN
+}
+
+enum CoinTxnType {
+  CREDIT
+  DEBIT
+}
+
+enum CouponType {
+  PERCENT
+  FIXED
+}
+
+enum PaymentItemType {
+  COURSE
+  TEST_SERIES
+  BATCH
+  NOTE_VOLUME
+}
+
+enum PaymentStatus {
+  CREATED
+  PAID
+  FAILED
+  REFUNDED
+}
+
+// ============================================================
+// Identity
+// ============================================================
+
+model User {
+  id               String    @id @default(cuid())
+  name             String
+  email            String    @unique
+  phone            String?   @unique
+  passwordHash     String
+  role             Role      @default(STUDENT)
+  state            String?
+  avatarUrl        String?
+  referralCode     String    @unique
+  referredById     String?
+  referredBy       User?     @relation("Referrals", fields: [referredById], references: [id])
+  referrals        User[]    @relation("Referrals")
+  coinBalance      Int       @default(0)
+  isEmailVerified  Boolean   @default(false)
+  isPhoneVerified  Boolean   @default(false)
+  isActive         Boolean   @default(true)
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime?
+
+  refreshTokens    RefreshToken[]
+  testAttempts     TestAttempt[]
+  enrollments      Enrollment[]
+  coinTransactions CoinTransaction[]
+  couponUsages     CouponUsage[]
+  payments         Payment[]
+  createdQuestions Question[]        @relation("QuestionCreatedBy")
+  blogs            Blog[]
+
+  @@index([role])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+enum VerificationPurpose {
+  EMAIL_VERIFY
+  PHONE_VERIFY
+  PASSWORD_RESET
+}
+
+model VerificationToken {
+  id         String              @id @default(cuid())
+  userId     String
+  purpose    VerificationPurpose
+  codeHash   String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime            @default(now())
+
+  @@index([userId, purpose])
+  @@map("verification_tokens")
+}
+
+// ============================================================
+// Catalog
+// ============================================================
+
+model Subject {
+  id        String    @id @default(cuid())
+  nameEn    String
+  nameHi    String?
+  topics    Topic[]
+  questions Question[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("subjects")
+}
+
+model Topic {
+  id        String    @id @default(cuid())
+  subjectId String
+  subject   Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  nameEn    String
+  nameHi    String?
+  questions Question[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([subjectId])
+  @@map("topics")
+}
+
+model Course {
+  id               String   @id @default(cuid())
+  titleEn          String
+  titleHi          String?
+  descriptionEn    String?  @db.Text
+  descriptionHi    String?  @db.Text
+  thumbnailUrl     String?
+  isFree           Boolean  @default(false)
+  price            Decimal  @default(0) @db.Decimal(10, 2)
+  isPublished      Boolean  @default(false)
+
+  testSeries       TestSeries[]
+  noteVolumes      NoteVolume[]
+  videos           Video[]
+  enrollments      Enrollment[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@map("courses")
+}
+
+model TestSeries {
+  id            String   @id @default(cuid())
+  courseId      String?
+  course        Course?  @relation(fields: [courseId], references: [id])
+  titleEn       String
+  titleHi       String?
+  descriptionEn String?  @db.Text
+  descriptionHi String?  @db.Text
+  thumbnailUrl  String?
+  validityDays  Int      @default(365)
+  isFree        Boolean  @default(false)
+  price         Decimal  @default(0) @db.Decimal(10, 2)
+  isPublished   Boolean  @default(false)
+
+  volumes       TestVolume[]
+  enrollments   Enrollment[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([courseId])
+  @@map("test_series")
+}
+
+model TestVolume {
+  id           String     @id @default(cuid())
+  testSeriesId String
+  testSeries   TestSeries @relation(fields: [testSeriesId], references: [id], onDelete: Cascade)
+  titleEn      String
+  titleHi      String?
+  order        Int        @default(0)
+
+  tests        Test[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([testSeriesId])
+  @@map("test_volumes")
+}
+
+model Batch {
+  id            String   @id @default(cuid())
+  titleEn       String
+  titleHi       String?
+  descriptionEn String?  @db.Text
+  descriptionHi String?  @db.Text
+  thumbnailUrl  String?
+  isFree        Boolean  @default(false)
+  price         Decimal  @default(0) @db.Decimal(10, 2)
+  isPublished   Boolean  @default(false)
+
+  videos        Video[]
+  enrollments   Enrollment[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@map("batches")
+}
+
+model Enrollment {
+  id           String            @id @default(cuid())
+  userId       String
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId     String?
+  course       Course?           @relation(fields: [courseId], references: [id])
+  testSeriesId String?
+  testSeries   TestSeries?       @relation(fields: [testSeriesId], references: [id])
+  batchId      String?
+  batch        Batch?            @relation(fields: [batchId], references: [id])
+  noteVolumeId String?
+  noteVolume   NoteVolume?       @relation(fields: [noteVolumeId], references: [id])
+  source       EnrollmentSource
+  enrolledAt   DateTime          @default(now())
+  expiresAt    DateTime?
+
+  @@index([userId])
+  @@index([courseId])
+  @@index([testSeriesId])
+  @@index([batchId])
+  @@map("enrollments")
+}
+
+// ============================================================
+// Test engine
+// ============================================================
+
+model Test {
+  id               String     @id @default(cuid())
+  testVolumeId     String
+  testVolume       TestVolume @relation(fields: [testVolumeId], references: [id], onDelete: Cascade)
+  titleEn          String
+  titleHi          String?
+  instructionsEn   String?    @db.Text
+  instructionsHi   String?    @db.Text
+  type             TestType   @default(PRACTICE)
+  status           TestStatus @default(DRAFT)
+  durationMinutes  Int        @default(60)
+  marksPerQuestion Decimal    @default(1) @db.Decimal(6, 2)
+  negativeMarks    Decimal    @default(0) @db.Decimal(6, 2)
+  isFree           Boolean    @default(false)
+  price            Decimal    @default(0) @db.Decimal(10, 2)
+  startAt          DateTime?
+  endAt            DateTime?
+
+  testQuestions    TestQuestion[]
+  attempts         TestAttempt[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([testVolumeId])
+  @@map("tests")
+}
+
+model Question {
+  id            String       @id @default(cuid())
+  subjectId     String?
+  subject       Subject?     @relation(fields: [subjectId], references: [id])
+  topicId       String?
+  topic         Topic?       @relation(fields: [topicId], references: [id])
+  type          QuestionType @default(SINGLE_CHOICE)
+  difficulty    Difficulty   @default(MEDIUM)
+  marks         Decimal      @default(1) @db.Decimal(6, 2)
+  negativeMarks Decimal      @default(0) @db.Decimal(6, 2)
+  createdById   String?
+  createdBy     User?        @relation("QuestionCreatedBy", fields: [createdById], references: [id])
+
+  translations  QuestionTranslation[]
+  options       QuestionOption[]
+  testQuestions TestQuestion[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([subjectId])
+  @@index([topicId])
+  @@map("questions")
+}
+
+model QuestionTranslation {
+  id          String   @id @default(cuid())
+  questionId  String
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  language    Language
+  text        String   @db.Text
+  explanation String?  @db.Text
+
+  @@unique([questionId, language])
+  @@map("question_translations")
+}
+
+model QuestionOption {
+  id           String   @id @default(cuid())
+  questionId   String
+  question     Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  order        Int      @default(0)
+  isCorrect    Boolean  @default(false)
+
+  translations OptionTranslation[]
+  testAnswers  TestAnswer[]
+
+  @@index([questionId])
+  @@map("question_options")
+}
+
+model OptionTranslation {
+  id         String         @id @default(cuid())
+  optionId   String
+  option     QuestionOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  language   Language
+  text       String         @db.Text
+
+  @@unique([optionId, language])
+  @@map("option_translations")
+}
+
+model TestQuestion {
+  id       String   @id @default(cuid())
+  testId   String
+  test     Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+  questionId String
+  question Question @relation(fields: [questionId], references: [id])
+  order    Int      @default(0)
+
+  testAnswers TestAnswer[]
+
+  @@unique([testId, questionId])
+  @@index([testId])
+  @@map("test_questions")
+}
+
+model TestAttempt {
+  id                 String        @id @default(cuid())
+  userId             String
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testId             String
+  test               Test          @relation(fields: [testId], references: [id])
+  language           Language      @default(EN)
+  status             AttemptStatus @default(IN_PROGRESS)
+  startedAt          DateTime      @default(now())
+  expiresAt          DateTime
+  submittedAt        DateTime?
+  score              Decimal?      @db.Decimal(8, 2)
+  correctCount       Int?
+  incorrectCount     Int?
+  unattemptedCount   Int?
+  timeTakenSeconds   Int?
+
+  answers            TestAnswer[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, testId])
+  @@map("test_attempts")
+}
+
+model TestAnswer {
+  id                 String        @id @default(cuid())
+  attemptId          String
+  attempt            TestAttempt   @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  testQuestionId     String
+  testQuestion       TestQuestion  @relation(fields: [testQuestionId], references: [id])
+  selectedOptionId   String?
+  selectedOption     QuestionOption? @relation(fields: [selectedOptionId], references: [id])
+  isMarkedForReview  Boolean       @default(false)
+  isCorrect          Boolean?
+  marksAwarded       Decimal?      @db.Decimal(6, 2)
+  answeredAt         DateTime?
+
+  @@unique([attemptId, testQuestionId])
+  @@index([attemptId])
+  @@map("test_answers")
+}
+
+// ============================================================
+// Content
+// ============================================================
+
+model NoteVolume {
+  id        String   @id @default(cuid())
+  courseId  String?
+  course    Course?  @relation(fields: [courseId], references: [id])
+  titleEn   String
+  titleHi   String?
+  isFree    Boolean  @default(false)
+  price     Decimal  @default(0) @db.Decimal(10, 2)
+
+  notes       Note[]
+  enrollments Enrollment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId])
+  @@map("note_volumes")
+}
+
+model Note {
+  id           String      @id @default(cuid())
+  noteVolumeId String
+  noteVolume   NoteVolume  @relation(fields: [noteVolumeId], references: [id], onDelete: Cascade)
+  titleEn      String
+  titleHi      String?
+  fileUrl      String
+  isFree       Boolean     @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([noteVolumeId])
+  @@map("notes")
+}
+
+model Video {
+  id        String   @id @default(cuid())
+  courseId  String?
+  course    Course?  @relation(fields: [courseId], references: [id])
+  batchId   String?
+  batch     Batch?   @relation(fields: [batchId], references: [id])
+  titleEn   String
+  titleHi   String?
+  videoUrl  String
+  isFree    Boolean  @default(false)
+  durationSeconds Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId])
+  @@index([batchId])
+  @@map("videos")
+}
+
+model BlogCategory {
+  id     String  @id @default(cuid())
+  nameEn String
+  nameHi String?
+  blogs  Blog[]
+
+  @@map("blog_categories")
+}
+
+model Blog {
+  id             String        @id @default(cuid())
+  slug           String        @unique
+  coverImageUrl  String?
+  authorId       String?
+  author         User?         @relation(fields: [authorId], references: [id])
+  categoryId     String?
+  category       BlogCategory? @relation(fields: [categoryId], references: [id])
+  isPublished    Boolean       @default(false)
+  publishedAt    DateTime?
+
+  translations   BlogTranslation[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([categoryId])
+  @@map("blogs")
+}
+
+model BlogTranslation {
+  id       String   @id @default(cuid())
+  blogId   String
+  blog     Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  language Language
+  title    String
+  excerpt  String?  @db.Text
+  content  String   @db.Text
+
+  @@unique([blogId, language])
+  @@map("blog_translations")
+}
+
+model CurrentAffairCategory {
+  id             String          @id @default(cuid())
+  nameEn         String
+  nameHi         String?
+  currentAffairs CurrentAffair[]
+
+  @@map("current_affair_categories")
+}
+
+model CurrentAffair {
+  id         String                  @id @default(cuid())
+  date       DateTime
+  categoryId String?
+  category   CurrentAffairCategory?  @relation(fields: [categoryId], references: [id])
+  isPublished Boolean                @default(false)
+
+  translations CurrentAffairTranslation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([date])
+  @@map("current_affairs")
+}
+
+model CurrentAffairTranslation {
+  id              String        @id @default(cuid())
+  currentAffairId String
+  currentAffair   CurrentAffair @relation(fields: [currentAffairId], references: [id], onDelete: Cascade)
+  language        Language
+  title           String
+  content         String        @db.Text
+
+  @@unique([currentAffairId, language])
+  @@map("current_affair_translations")
+}
+
+// ============================================================
+// Commerce
+// ============================================================
+
+model Coupon {
+  id             String       @id @default(cuid())
+  code           String       @unique
+  type           CouponType
+  value          Decimal      @db.Decimal(10, 2)
+  maxDiscount    Decimal?     @db.Decimal(10, 2)
+  minPurchase    Decimal?     @db.Decimal(10, 2)
+  usageLimit     Int?
+  perUserLimit   Int          @default(1)
+  validFrom      DateTime
+  validTo        DateTime
+  isActive       Boolean      @default(true)
+  applicableTo   Json?
+
+  usages         CouponUsage[]
+  payments       Payment[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@map("coupons")
+}
+
+model CouponUsage {
+  id               String   @id @default(cuid())
+  couponId         String
+  coupon           Coupon   @relation(fields: [couponId], references: [id])
+  userId           String
+  user             User     @relation(fields: [userId], references: [id])
+  paymentId        String?  @unique
+  payment          Payment? @relation(fields: [paymentId], references: [id])
+  discountApplied  Decimal  @db.Decimal(10, 2)
+  usedAt           DateTime @default(now())
+
+  @@index([couponId])
+  @@index([userId])
+  @@map("coupon_usages")
+}
+
+model CoinTransaction {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      CoinTxnType
+  amount    Int
+  reason    String
+  refType   String?
+  refId     String?
+  createdAt DateTime    @default(now())
+
+  @@index([userId])
+  @@map("coin_transactions")
+}
+
+model Payment {
+  id                String          @id @default(cuid())
+  userId            String
+  user              User            @relation(fields: [userId], references: [id])
+  razorpayOrderId   String          @unique
+  razorpayPaymentId String?
+  razorpaySignature String?
+  amount            Decimal         @db.Decimal(10, 2)
+  currency          String          @default("INR")
+  status            PaymentStatus   @default(CREATED)
+  itemType          PaymentItemType
+  itemId            String
+  couponId          String?
+  coupon            Coupon?         @relation(fields: [couponId], references: [id])
+
+  couponUsage       CouponUsage?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("payments")
+}

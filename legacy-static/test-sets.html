@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Sets</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+
+<body style="background:#f4f6fb">
+
+<div class="container mt-4">
+
+  <h5 class="fw-bold mb-3">List of Test Sets</h5>
+
+  <!-- Test Set Card -->
+  <div class="card border-0 shadow-sm mb-3" style="border-radius:16px;">
+    <div class="card-body">
+
+      <div class="d-flex align-items-center gap-3">
+        <!-- Thumbnail -->
+        <img src="images/course-bg.png"
+             style="width:70px;height:70px;border-radius:12px;object-fit:cover;">
+
+        <!-- Name -->
+        <div class="flex-grow-1">
+          <h6 class="fw-bold mb-1">Ancient History – Test Set #01</h6>
+          <small class="text-muted">100 Questions • Free</small>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-danger w-100"
+          onclick="setMode('live')" data-bs-toggle="modal" data-bs-target="#langModal">
+          Live
+        </button>
+
+        <button class="btn btn-success w-100"
+          onclick="setMode('practice')" data-bs-toggle="modal" data-bs-target="#langModal">
+          Practice
+        </button>
+
+        <button class="btn btn-primary w-100"
+          onclick="window.location.href='pdf-option.html'">
+          PDF Test
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Duplicate for more test sets -->
+  <div class="card border-0 shadow-sm mb-3" style="border-radius:16px;">
+    <div class="card-body">
+      <div class="d-flex align-items-center gap-3">
+        <img src="images/course-bg.png"
+             style="width:70px;height:70px;border-radius:12px;object-fit:cover;">
+        <div class="flex-grow-1">
+          <h6 class="fw-bold mb-1">Medieval History – Test Set #02</h6>
+          <small class="text-muted">80 Questions • Free</small>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-danger w-100"
+          onclick="setMode('live')" data-bs-toggle="modal" data-bs-target="#langModal">
+          Live
+        </button>
+
+        <button class="btn btn-success w-100"
+          onclick="setMode('practice')" data-bs-toggle="modal" data-bs-target="#langModal">
+          Practice
+        </button>
+
+        <button class="btn btn-primary w-100">
+          PDF Test
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Language Modal -->
+<div class="modal fade" id="langModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow" style="border-radius:16px;">
+      <div class="modal-body text-center p-4">
+        <h6 class="fw-bold mb-3">Choose Language</h6>
+        <button class="btn btn-outline-primary w-100 mb-2"
+          onclick="goNext('hindi')">Hindi</button>
+        <button class="btn btn-outline-primary w-100"
+          onclick="goNext('english')">English</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+let mode = "";
+
+function setMode(type) {
+  mode = type;
+}
+
+function goNext(language) {
+  if (mode === "live") {
+    window.location.href = "live-test.html?lang=" + language;
+  }
+  if (mode === "practice") {
+    window.location.href = "practice-test.html?lang=" + language;
+  }
+}
+</script>
+
+</body>
+</html>

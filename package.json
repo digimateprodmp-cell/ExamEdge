@@ -1,0 +1,31 @@
+{
+  "name": "test-mela",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "backend",
+    "frontend",
+    "admin"
+  ],
+  "scripts": {
+    "dev:backend": "npm run start:dev -w backend",
+    "dev:frontend": "npm run dev -w frontend",
+    "dev:admin": "npm run dev -w admin",
+    "build:backend": "npm run build -w backend",
+    "build:frontend": "npm run build -w frontend",
+    "build:admin": "npm run build -w admin",
+    "build": "npm run build:backend && npm run build:frontend && npm run build:admin",
+    "lint:backend": "npm run lint -w backend",
+    "lint:frontend": "npm run lint -w frontend",
+    "lint:admin": "npm run lint -w admin",
+    "lint": "npm run lint:backend && npm run lint:frontend && npm run lint:admin",
+    "prisma:generate": "npm run prisma:generate -w backend",
+    "prisma:migrate": "npm run prisma:migrate -w backend",
+    "prisma:seed": "npm run prisma:seed -w backend",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
