@@ -46,6 +46,14 @@ export class CouponsService {
         });
         return Number(item.price);
       }
+      case PaymentItemType.SLOT_BOOKING: {
+        // itemId is a SlotReservation id; price is fixed by the parent LiveTest.
+        const reservation = await this.prisma.slotReservation.findFirstOrThrow({
+          where: { id: itemId },
+          include: { slot: { include: { liveTest: true } } },
+        });
+        return Number(reservation.slot.liveTest.price);
+      }
       default:
         throw new BadRequestException('Unsupported item type');
     }

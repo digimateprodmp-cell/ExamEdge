@@ -6,6 +6,7 @@ import { Menu, User as UserIcon } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { Logo } from './logo';
 import { LanguageSwitcher } from './language-switcher';
+import { NotificationBell } from './notification-bell';
 import { MobileNav } from './mobile-nav';
 import { Button } from '@/components/ui/button';
 import {
@@ -47,6 +48,7 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <LanguageSwitcher className="hidden sm:inline-flex" />
+          <NotificationBell />
 
           <div className="hidden md:block">
             {status === 'authenticated' && user ? (

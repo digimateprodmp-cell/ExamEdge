@@ -14,6 +14,7 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CouponsService } from '../coupons/coupons.service';
+import { SlotsService } from '../slots/slots.service';
 import { CreateOrderDto } from './dto/payment.dto';
 
 @Injectable()
@@ -22,6 +23,7 @@ export class PaymentsService {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     private readonly couponsService: CouponsService,
+    private readonly slotsService: SlotsService,
   ) {}
 
   private getRazorpayClient(): Razorpay {
@@ -68,7 +70,7 @@ export class PaymentsService {
           couponId,
         },
       });
-      await this.grantEnrollment(userId, dto.itemType, dto.itemId);
+      await this.fulfillPayment(userId, dto.itemType, dto.itemId, payment.id);
       return { free: true, payment };
     }
 
@@ -155,7 +157,12 @@ export class PaymentsService {
       }
     });
 
-    await this.grantEnrollment(userId, payment.itemType, payment.itemId);
+    await this.fulfillPayment(
+      userId,
+      payment.itemType,
+      payment.itemId,
+      payment.id,
+    );
 
     return this.prisma.payment.findUniqueOrThrow({ where: { id: payment.id } });
   }
@@ -176,6 +183,24 @@ export class PaymentsService {
       orderBy: { createdAt: 'desc' },
       take: 200,
     });
+  }
+
+  /**
+   * itemType decides what a paid-for item actually grants. SLOT_BOOKING
+   * branches to slot confirmation instead of an Enrollment row — itemId is
+   * the SlotReservation id created when the student reserved the seat.
+   */
+  private async fulfillPayment(
+    userId: string,
+    itemType: PaymentItemType,
+    itemId: string,
+    paymentId: string,
+  ) {
+    if (itemType === PaymentItemType.SLOT_BOOKING) {
+      await this.slotsService.confirmReservation(itemId, paymentId);
+      return;
+    }
+    await this.grantEnrollment(userId, itemType, itemId);
   }
 
   private async grantEnrollment(

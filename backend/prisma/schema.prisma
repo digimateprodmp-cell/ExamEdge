@@ -72,6 +72,7 @@ enum PaymentItemType {
   TEST_SERIES
   BATCH
   NOTE_VOLUME
+  SLOT_BOOKING
 }
 
 enum PaymentStatus {
@@ -86,26 +87,26 @@ enum PaymentStatus {
 // ============================================================
 
 model User {
-  id               String    @id @default(cuid())
-  name             String
-  email            String    @unique
-  phone            String?   @unique
-  passwordHash     String
-  role             Role      @default(STUDENT)
-  state            String?
-  avatarUrl        String?
-  referralCode     String    @unique
-  referredById     String?
-  referredBy       User?     @relation("Referrals", fields: [referredById], references: [id])
-  referrals        User[]    @relation("Referrals")
-  coinBalance      Int       @default(0)
-  isEmailVerified  Boolean   @default(false)
-  isPhoneVerified  Boolean   @default(false)
-  isActive         Boolean   @default(true)
+  id              String  @id @default(cuid())
+  name            String
+  email           String  @unique
+  phone           String? @unique
+  passwordHash    String
+  role            Role    @default(STUDENT)
+  state           String?
+  avatarUrl       String?
+  referralCode    String  @unique
+  referredById    String?
+  referredBy      User?   @relation("Referrals", fields: [referredById], references: [id])
+  referrals       User[]  @relation("Referrals")
+  coinBalance     Int     @default(0)
+  isEmailVerified Boolean @default(false)
+  isPhoneVerified Boolean @default(false)
+  isActive        Boolean @default(true)
 
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  deletedAt        DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   refreshTokens    RefreshToken[]
   testAttempts     TestAttempt[]
@@ -116,18 +117,30 @@ model User {
   createdQuestions Question[]        @relation("QuestionCreatedBy")
   blogs            Blog[]
 
+  examProfiles      StudentExamProfile[]
+  liveTestAttempts  LiveTestAttempt[]
+  integrityEvents   ExamIntegrityEvent[]
+  createdLiveTests  LiveTest[]               @relation("LiveTestCreatedBy")
+  liveTestAuditLogs LiveTestAuditLog[]
+  createdSlots      TestSlot[]               @relation("SlotCreatedBy")
+  slotReservations  SlotReservation[]
+  slotBookings      SlotBooking[]
+  subscriptions     Subscription[]
+  notifications     Notification[]
+  notificationPrefs NotificationPreference[]
+
   @@index([role])
   @@map("users")
 }
 
 model RefreshToken {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   tokenHash String
   expiresAt DateTime
   revokedAt DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   @@index([userId])
   @@map("refresh_tokens")
@@ -157,46 +170,48 @@ model VerificationToken {
 // ============================================================
 
 model Subject {
-  id        String    @id @default(cuid())
+  id        String     @id @default(cuid())
   nameEn    String
   nameHi    String?
   topics    Topic[]
   questions Question[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   @@map("subjects")
 }
 
 model Topic {
-  id        String    @id @default(cuid())
-  subjectId String
-  subject   Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  nameEn    String
-  nameHi    String?
-  questions Question[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id             String          @id @default(cuid())
+  subjectId      String
+  subject        Subject         @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  nameEn         String
+  nameHi         String?
+  questions      Question[]
+  syllabusTopics SyllabusTopic[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
   @@index([subjectId])
   @@map("topics")
 }
 
 model Course {
-  id               String   @id @default(cuid())
-  titleEn          String
-  titleHi          String?
-  descriptionEn    String?  @db.Text
-  descriptionHi    String?  @db.Text
-  thumbnailUrl     String?
-  isFree           Boolean  @default(false)
-  price            Decimal  @default(0) @db.Decimal(10, 2)
-  isPublished      Boolean  @default(false)
+  id            String  @id @default(cuid())
+  titleEn       String
+  titleHi       String?
+  descriptionEn String? @db.Text
+  descriptionHi String? @db.Text
+  thumbnailUrl  String?
+  isFree        Boolean @default(false)
+  price         Decimal @default(0) @db.Decimal(10, 2)
+  isPublished   Boolean @default(false)
 
-  testSeries       TestSeries[]
-  noteVolumes      NoteVolume[]
-  videos           Video[]
-  enrollments      Enrollment[]
+  testSeries  TestSeries[]
+  noteVolumes NoteVolume[]
+  videos      Video[]
+  enrollments Enrollment[]
+  examCycles  ExamCycle[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -206,21 +221,21 @@ model Course {
 }
 
 model TestSeries {
-  id            String   @id @default(cuid())
+  id            String  @id @default(cuid())
   courseId      String?
-  course        Course?  @relation(fields: [courseId], references: [id])
+  course        Course? @relation(fields: [courseId], references: [id])
   titleEn       String
   titleHi       String?
-  descriptionEn String?  @db.Text
-  descriptionHi String?  @db.Text
+  descriptionEn String? @db.Text
+  descriptionHi String? @db.Text
   thumbnailUrl  String?
-  validityDays  Int      @default(365)
-  isFree        Boolean  @default(false)
-  price         Decimal  @default(0) @db.Decimal(10, 2)
-  isPublished   Boolean  @default(false)
+  validityDays  Int     @default(365)
+  isFree        Boolean @default(false)
+  price         Decimal @default(0) @db.Decimal(10, 2)
+  isPublished   Boolean @default(false)
 
-  volumes       TestVolume[]
-  enrollments   Enrollment[]
+  volumes     TestVolume[]
+  enrollments Enrollment[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -238,7 +253,7 @@ model TestVolume {
   titleHi      String?
   order        Int        @default(0)
 
-  tests        Test[]
+  tests Test[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -248,18 +263,18 @@ model TestVolume {
 }
 
 model Batch {
-  id            String   @id @default(cuid())
+  id            String  @id @default(cuid())
   titleEn       String
   titleHi       String?
-  descriptionEn String?  @db.Text
-  descriptionHi String?  @db.Text
+  descriptionEn String? @db.Text
+  descriptionHi String? @db.Text
   thumbnailUrl  String?
-  isFree        Boolean  @default(false)
-  price         Decimal  @default(0) @db.Decimal(10, 2)
-  isPublished   Boolean  @default(false)
+  isFree        Boolean @default(false)
+  price         Decimal @default(0) @db.Decimal(10, 2)
+  isPublished   Boolean @default(false)
 
-  videos        Video[]
-  enrollments   Enrollment[]
+  videos      Video[]
+  enrollments Enrollment[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -269,19 +284,19 @@ model Batch {
 }
 
 model Enrollment {
-  id           String            @id @default(cuid())
+  id           String           @id @default(cuid())
   userId       String
-  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   courseId     String?
-  course       Course?           @relation(fields: [courseId], references: [id])
+  course       Course?          @relation(fields: [courseId], references: [id])
   testSeriesId String?
-  testSeries   TestSeries?       @relation(fields: [testSeriesId], references: [id])
+  testSeries   TestSeries?      @relation(fields: [testSeriesId], references: [id])
   batchId      String?
-  batch        Batch?            @relation(fields: [batchId], references: [id])
+  batch        Batch?           @relation(fields: [batchId], references: [id])
   noteVolumeId String?
-  noteVolume   NoteVolume?       @relation(fields: [noteVolumeId], references: [id])
+  noteVolume   NoteVolume?      @relation(fields: [noteVolumeId], references: [id])
   source       EnrollmentSource
-  enrolledAt   DateTime          @default(now())
+  enrolledAt   DateTime         @default(now())
   expiresAt    DateTime?
 
   @@index([userId])
@@ -313,8 +328,9 @@ model Test {
   startAt          DateTime?
   endAt            DateTime?
 
-  testQuestions    TestQuestion[]
-  attempts         TestAttempt[]
+  testQuestions TestQuestion[]
+  attempts      TestAttempt[]
+  liveTests     LiveTest[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -363,11 +379,11 @@ model QuestionTranslation {
 }
 
 model QuestionOption {
-  id           String   @id @default(cuid())
-  questionId   String
-  question     Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  order        Int      @default(0)
-  isCorrect    Boolean  @default(false)
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  order      Int      @default(0)
+  isCorrect  Boolean  @default(false)
 
   translations OptionTranslation[]
   testAnswers  TestAnswer[]
@@ -377,23 +393,23 @@ model QuestionOption {
 }
 
 model OptionTranslation {
-  id         String         @id @default(cuid())
-  optionId   String
-  option     QuestionOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
-  language   Language
-  text       String         @db.Text
+  id       String         @id @default(cuid())
+  optionId String
+  option   QuestionOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  language Language
+  text     String         @db.Text
 
   @@unique([optionId, language])
   @@map("option_translations")
 }
 
 model TestQuestion {
-  id       String   @id @default(cuid())
-  testId   String
-  test     Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  testId     String
+  test       Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
   questionId String
-  question Question @relation(fields: [questionId], references: [id])
-  order    Int      @default(0)
+  question   Question @relation(fields: [questionId], references: [id])
+  order      Int      @default(0)
 
   testAnswers TestAnswer[]
 
@@ -403,23 +419,24 @@ model TestQuestion {
 }
 
 model TestAttempt {
-  id                 String        @id @default(cuid())
-  userId             String
-  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  testId             String
-  test               Test          @relation(fields: [testId], references: [id])
-  language           Language      @default(EN)
-  status             AttemptStatus @default(IN_PROGRESS)
-  startedAt          DateTime      @default(now())
-  expiresAt          DateTime
-  submittedAt        DateTime?
-  score              Decimal?      @db.Decimal(8, 2)
-  correctCount       Int?
-  incorrectCount     Int?
-  unattemptedCount   Int?
-  timeTakenSeconds   Int?
+  id               String        @id @default(cuid())
+  userId           String
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testId           String
+  test             Test          @relation(fields: [testId], references: [id])
+  language         Language      @default(EN)
+  status           AttemptStatus @default(IN_PROGRESS)
+  startedAt        DateTime      @default(now())
+  expiresAt        DateTime
+  submittedAt      DateTime?
+  score            Decimal?      @db.Decimal(8, 2)
+  correctCount     Int?
+  incorrectCount   Int?
+  unattemptedCount Int?
+  timeTakenSeconds Int?
 
-  answers            TestAnswer[]
+  answers         TestAnswer[]
+  liveTestAttempt LiveTestAttempt?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -429,17 +446,17 @@ model TestAttempt {
 }
 
 model TestAnswer {
-  id                 String        @id @default(cuid())
-  attemptId          String
-  attempt            TestAttempt   @relation(fields: [attemptId], references: [id], onDelete: Cascade)
-  testQuestionId     String
-  testQuestion       TestQuestion  @relation(fields: [testQuestionId], references: [id])
-  selectedOptionId   String?
-  selectedOption     QuestionOption? @relation(fields: [selectedOptionId], references: [id])
-  isMarkedForReview  Boolean       @default(false)
-  isCorrect          Boolean?
-  marksAwarded       Decimal?      @db.Decimal(6, 2)
-  answeredAt         DateTime?
+  id                String          @id @default(cuid())
+  attemptId         String
+  attempt           TestAttempt     @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  testQuestionId    String
+  testQuestion      TestQuestion    @relation(fields: [testQuestionId], references: [id])
+  selectedOptionId  String?
+  selectedOption    QuestionOption? @relation(fields: [selectedOptionId], references: [id])
+  isMarkedForReview Boolean         @default(false)
+  isCorrect         Boolean?
+  marksAwarded      Decimal?        @db.Decimal(6, 2)
+  answeredAt        DateTime?
 
   @@unique([attemptId, testQuestionId])
   @@index([attemptId])
@@ -451,13 +468,13 @@ model TestAnswer {
 // ============================================================
 
 model NoteVolume {
-  id        String   @id @default(cuid())
-  courseId  String?
-  course    Course?  @relation(fields: [courseId], references: [id])
-  titleEn   String
-  titleHi   String?
-  isFree    Boolean  @default(false)
-  price     Decimal  @default(0) @db.Decimal(10, 2)
+  id       String  @id @default(cuid())
+  courseId String?
+  course   Course? @relation(fields: [courseId], references: [id])
+  titleEn  String
+  titleHi  String?
+  isFree   Boolean @default(false)
+  price    Decimal @default(0) @db.Decimal(10, 2)
 
   notes       Note[]
   enrollments Enrollment[]
@@ -470,13 +487,13 @@ model NoteVolume {
 }
 
 model Note {
-  id           String      @id @default(cuid())
+  id           String     @id @default(cuid())
   noteVolumeId String
-  noteVolume   NoteVolume  @relation(fields: [noteVolumeId], references: [id], onDelete: Cascade)
+  noteVolume   NoteVolume @relation(fields: [noteVolumeId], references: [id], onDelete: Cascade)
   titleEn      String
   titleHi      String?
   fileUrl      String
-  isFree       Boolean     @default(false)
+  isFree       Boolean    @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -486,15 +503,15 @@ model Note {
 }
 
 model Video {
-  id        String   @id @default(cuid())
-  courseId  String?
-  course    Course?  @relation(fields: [courseId], references: [id])
-  batchId   String?
-  batch     Batch?   @relation(fields: [batchId], references: [id])
-  titleEn   String
-  titleHi   String?
-  videoUrl  String
-  isFree    Boolean  @default(false)
+  id              String  @id @default(cuid())
+  courseId        String?
+  course          Course? @relation(fields: [courseId], references: [id])
+  batchId         String?
+  batch           Batch?  @relation(fields: [batchId], references: [id])
+  titleEn         String
+  titleHi         String?
+  videoUrl        String
+  isFree          Boolean @default(false)
   durationSeconds Int?
 
   createdAt DateTime @default(now())
@@ -515,17 +532,17 @@ model BlogCategory {
 }
 
 model Blog {
-  id             String        @id @default(cuid())
-  slug           String        @unique
-  coverImageUrl  String?
-  authorId       String?
-  author         User?         @relation(fields: [authorId], references: [id])
-  categoryId     String?
-  category       BlogCategory? @relation(fields: [categoryId], references: [id])
-  isPublished    Boolean       @default(false)
-  publishedAt    DateTime?
+  id            String        @id @default(cuid())
+  slug          String        @unique
+  coverImageUrl String?
+  authorId      String?
+  author        User?         @relation(fields: [authorId], references: [id])
+  categoryId    String?
+  category      BlogCategory? @relation(fields: [categoryId], references: [id])
+  isPublished   Boolean       @default(false)
+  publishedAt   DateTime?
 
-  translations   BlogTranslation[]
+  translations BlogTranslation[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -558,10 +575,10 @@ model CurrentAffairCategory {
 }
 
 model CurrentAffair {
-  id         String                  @id @default(cuid())
-  date       DateTime
-  categoryId String?
-  category   CurrentAffairCategory?  @relation(fields: [categoryId], references: [id])
+  id          String                 @id @default(cuid())
+  date        DateTime
+  categoryId  String?
+  category    CurrentAffairCategory? @relation(fields: [categoryId], references: [id])
   isPublished Boolean                @default(false)
 
   translations CurrentAffairTranslation[]
@@ -591,21 +608,21 @@ model CurrentAffairTranslation {
 // ============================================================
 
 model Coupon {
-  id             String       @id @default(cuid())
-  code           String       @unique
-  type           CouponType
-  value          Decimal      @db.Decimal(10, 2)
-  maxDiscount    Decimal?     @db.Decimal(10, 2)
-  minPurchase    Decimal?     @db.Decimal(10, 2)
-  usageLimit     Int?
-  perUserLimit   Int          @default(1)
-  validFrom      DateTime
-  validTo        DateTime
-  isActive       Boolean      @default(true)
-  applicableTo   Json?
+  id           String     @id @default(cuid())
+  code         String     @unique
+  type         CouponType
+  value        Decimal    @db.Decimal(10, 2)
+  maxDiscount  Decimal?   @db.Decimal(10, 2)
+  minPurchase  Decimal?   @db.Decimal(10, 2)
+  usageLimit   Int?
+  perUserLimit Int        @default(1)
+  validFrom    DateTime
+  validTo      DateTime
+  isActive     Boolean    @default(true)
+  applicableTo Json?
 
-  usages         CouponUsage[]
-  payments       Payment[]
+  usages   CouponUsage[]
+  payments Payment[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -615,15 +632,15 @@ model Coupon {
 }
 
 model CouponUsage {
-  id               String   @id @default(cuid())
-  couponId         String
-  coupon           Coupon   @relation(fields: [couponId], references: [id])
-  userId           String
-  user             User     @relation(fields: [userId], references: [id])
-  paymentId        String?  @unique
-  payment          Payment? @relation(fields: [paymentId], references: [id])
-  discountApplied  Decimal  @db.Decimal(10, 2)
-  usedAt           DateTime @default(now())
+  id              String   @id @default(cuid())
+  couponId        String
+  coupon          Coupon   @relation(fields: [couponId], references: [id])
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  paymentId       String?  @unique
+  payment         Payment? @relation(fields: [paymentId], references: [id])
+  discountApplied Decimal  @db.Decimal(10, 2)
+  usedAt          DateTime @default(now())
 
   @@index([couponId])
   @@index([userId])
@@ -660,11 +677,489 @@ model Payment {
   couponId          String?
   coupon            Coupon?         @relation(fields: [couponId], references: [id])
 
-  couponUsage       CouponUsage?
+  couponUsage     CouponUsage?
+  slotReservation SlotReservation?
+  slotBooking     SlotBooking?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@map("payments")
+}
+
+// ============================================================
+// Exam layer (wraps existing Course/Topic content)
+// ============================================================
+
+enum ExamCategory {
+  UPSC
+  SSC
+  BANKING
+  STATE_PSC
+  RAILWAY
+  DEFENCE
+  OTHER
+}
+
+model Exam {
+  id       String       @id @default(cuid())
+  nameEn   String
+  nameHi   String?
+  slug     String       @unique
+  category ExamCategory @default(OTHER)
+  isActive Boolean      @default(true)
+
+  cycles ExamCycle[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("exams")
+}
+
+model ExamCycle {
+  id       String  @id @default(cuid())
+  examId   String
+  exam     Exam    @relation(fields: [examId], references: [id], onDelete: Cascade)
+  year     Int
+  courseId String?
+  course   Course? @relation(fields: [courseId], references: [id])
+  isActive Boolean @default(true)
+
+  syllabusVersions    SyllabusVersion[]
+  studentExamProfiles StudentExamProfile[]
+  liveTests           LiveTest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([examId])
+  @@map("exam_cycles")
+}
+
+model SyllabusVersion {
+  id          String    @id @default(cuid())
+  examCycleId String
+  examCycle   ExamCycle @relation(fields: [examCycleId], references: [id], onDelete: Cascade)
+  version     Int       @default(1)
+  isActive    Boolean   @default(true)
+
+  topics SyllabusTopic[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([examCycleId])
+  @@map("syllabus_versions")
+}
+
+model SyllabusTopic {
+  id                String          @id @default(cuid())
+  syllabusVersionId String
+  syllabusVersion   SyllabusVersion @relation(fields: [syllabusVersionId], references: [id], onDelete: Cascade)
+  topicId           String
+  topic             Topic           @relation(fields: [topicId], references: [id])
+  weight            Int             @default(1)
+
+  @@unique([syllabusVersionId, topicId])
+  @@index([topicId])
+  @@map("syllabus_topics")
+}
+
+enum PrepStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+model StudentExamProfile {
+  id                  String      @id @default(cuid())
+  userId              String
+  user                User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  examCycleId         String
+  examCycle           ExamCycle   @relation(fields: [examCycleId], references: [id])
+  targetYear          Int?
+  prepStatus          PrepStatus  @default(ACTIVE)
+  preferredLanguage   Language    @default(EN)
+  preferredDifficulty Difficulty?
+  targetExamDate      DateTime?
+  isPrimary           Boolean     @default(false)
+  isActive            Boolean     @default(true)
+  lastActivityAt      DateTime    @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, examCycleId])
+  @@index([userId])
+  @@map("student_exam_profiles")
+}
+
+// ============================================================
+// Live Test engine
+// ============================================================
+
+enum LiveTestStatus {
+  UPCOMING
+  COUNTDOWN
+  LIVE
+  ENDED
+  CANCELLED
+  RESULTS_AVAILABLE
+}
+
+enum LiveAttemptStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  SUBMITTED
+  AUTO_SUBMITTED
+  TERMINATED_FOR_VIOLATION
+}
+
+enum IntegrityEventType {
+  BLOCKED_SHORTCUT
+  COPY_ATTEMPT
+  PASTE_ATTEMPT
+  PRINT_ATTEMPT
+  DEVTOOLS_ATTEMPT
+  TAB_SWITCH
+  WINDOW_BLUR
+  FULLSCREEN_EXIT
+  CONNECTION_LOST
+  CONNECTION_RESTORED
+}
+
+enum IntegritySeverity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum IntegrityAction {
+  LOGGED
+  WARNING
+  TERMINATED
+}
+
+enum ResultVisibility {
+  IMMEDIATE
+  MANUAL
+  SCHEDULED
+}
+
+model IntegrityPolicy {
+  id       String  @id @default(cuid())
+  name     String
+  config   Json
+  isActive Boolean @default(true)
+
+  liveTests LiveTest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("integrity_policies")
+}
+
+model LiveTest {
+  id                 String           @id @default(cuid())
+  title              String
+  examCycleId        String?
+  examCycle          ExamCycle?       @relation(fields: [examCycleId], references: [id])
+  testId             String
+  test               Test             @relation(fields: [testId], references: [id])
+  startAt            DateTime
+  endAt              DateTime
+  durationMinutes    Int
+  timezone           String           @default("Asia/Kolkata")
+  allowLateEntry     Boolean          @default(false)
+  lateEntryCutoffAt  DateTime?
+  isFree             Boolean          @default(true)
+  price              Decimal          @default(0) @db.Decimal(10, 2)
+  status             LiveTestStatus   @default(UPCOMING)
+  instructions       String?          @db.Text
+  integrityPolicyId  String?
+  integrityPolicy    IntegrityPolicy? @relation(fields: [integrityPolicyId], references: [id])
+  resultVisibility   ResultVisibility @default(IMMEDIATE)
+  resultVisibleAt    DateTime?
+  randomizeQuestions Boolean          @default(false)
+  createdById        String?
+  createdBy          User?            @relation("LiveTestCreatedBy", fields: [createdById], references: [id])
+
+  attempts  LiveTestAttempt[]
+  slots     TestSlot[]
+  auditLogs LiveTestAuditLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([examCycleId])
+  @@index([testId])
+  @@index([status])
+  @@map("live_tests")
+}
+
+model LiveTestAttempt {
+  id                    String            @id @default(cuid())
+  liveTestId            String
+  liveTest              LiveTest          @relation(fields: [liveTestId], references: [id], onDelete: Cascade)
+  userId                String
+  user                  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testAttemptId         String            @unique
+  testAttempt           TestAttempt       @relation(fields: [testAttemptId], references: [id], onDelete: Cascade)
+  status                LiveAttemptStatus @default(NOT_STARTED)
+  joinedAt              DateTime          @default(now())
+  integrityWarningCount Int               @default(0)
+  assignedQuestionOrder Json?
+
+  integrityEvents ExamIntegrityEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([liveTestId, userId])
+  @@index([liveTestId])
+  @@index([userId])
+  @@map("live_test_attempts")
+}
+
+model ExamIntegrityEvent {
+  id                String             @id @default(cuid())
+  liveTestAttemptId String
+  liveTestAttempt   LiveTestAttempt    @relation(fields: [liveTestAttemptId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User               @relation(fields: [userId], references: [id])
+  liveTestId        String
+  eventType         IntegrityEventType
+  keyCombination    String?
+  timestamp         DateTime           @default(now())
+  browserInfo       String?
+  metadata          Json?
+  severity          IntegritySeverity  @default(LOW)
+  actionTaken       IntegrityAction    @default(LOGGED)
+
+  @@index([liveTestAttemptId])
+  @@index([liveTestId])
+  @@map("exam_integrity_events")
+}
+
+model LiveTestAuditLog {
+  id         String    @id @default(cuid())
+  liveTestId String?
+  liveTest   LiveTest? @relation(fields: [liveTestId], references: [id])
+  actorId    String?
+  actor      User?     @relation(fields: [actorId], references: [id])
+  action     String
+  metadata   Json?
+  createdAt  DateTime  @default(now())
+
+  @@index([liveTestId])
+  @@map("live_test_audit_logs")
+}
+
+// ============================================================
+// Slots, subscriptions
+// ============================================================
+
+enum SlotStatus {
+  OPEN
+  FULL
+  CLOSED
+  CANCELLED
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  EXPIRED
+  RELEASED
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+model TestSlot {
+  id             String     @id @default(cuid())
+  liveTestId     String
+  liveTest       LiveTest   @relation(fields: [liveTestId], references: [id], onDelete: Cascade)
+  startAt        DateTime
+  endAt          DateTime
+  timezone       String     @default("Asia/Kolkata")
+  capacity       Int
+  bookedCount    Int        @default(0)
+  status         SlotStatus @default(OPEN)
+  bookingOpenAt  DateTime?
+  bookingCloseAt DateTime?
+  createdById    String?
+  createdBy      User?      @relation("SlotCreatedBy", fields: [createdById], references: [id])
+
+  reservations SlotReservation[]
+  bookings     SlotBooking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([liveTestId])
+  @@map("test_slots")
+}
+
+model SlotReservation {
+  id        String            @id @default(cuid())
+  slotId    String
+  slot      TestSlot          @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status    ReservationStatus @default(PENDING)
+  expiresAt DateTime
+  paymentId String?           @unique
+  payment   Payment?          @relation(fields: [paymentId], references: [id])
+
+  booking SlotBooking?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slotId])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("slot_reservations")
+}
+
+model SlotBooking {
+  id             String           @id @default(cuid())
+  slotId         String
+  slot           TestSlot         @relation(fields: [slotId], references: [id])
+  userId         String
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reservationId  String?          @unique
+  reservation    SlotReservation? @relation(fields: [reservationId], references: [id])
+  status         BookingStatus    @default(CONFIRMED)
+  paymentId      String?          @unique
+  payment        Payment?         @relation(fields: [paymentId], references: [id])
+  subscriptionId String?
+  subscription   Subscription?    @relation(fields: [subscriptionId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([slotId, userId])
+  @@index([slotId])
+  @@index([userId])
+  @@map("slot_bookings")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+model SubscriptionPlan {
+  id           String  @id @default(cuid())
+  name         String
+  description  String? @db.Text
+  priceMonthly Decimal @db.Decimal(10, 2)
+  priceYearly  Decimal @db.Decimal(10, 2)
+  isActive     Boolean @default(true)
+
+  entitlements  PlanEntitlement[]
+  subscriptions Subscription[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("subscription_plans")
+}
+
+model PlanEntitlement {
+  id                  String           @id @default(cuid())
+  planId              String
+  plan                SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  examId              String?
+  liveTestsLimit      Int?
+  practiceTestsLimit  Int?
+  aiQuestionsPerMonth Int?
+
+  @@index([planId])
+  @@map("plan_entitlements")
+}
+
+model Subscription {
+  id      String             @id @default(cuid())
+  userId  String
+  user    User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId  String
+  plan    SubscriptionPlan   @relation(fields: [planId], references: [id])
+  startAt DateTime
+  endAt   DateTime
+  status  SubscriptionStatus @default(ACTIVE)
+
+  slotBookings SlotBooking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("subscriptions")
+}
+
+// ============================================================
+// Notifications
+// ============================================================
+
+enum NotificationType {
+  PAYMENT
+  LIVE_TEST_SCHEDULE
+  LIVE_TEST_REMINDER
+  LIVE_TEST_CANCELLED
+  RESULT_AVAILABLE
+  SLOT_BOOKING
+  SUBSCRIPTION
+  GENERAL
+}
+
+model Notification {
+  id         String           @id @default(cuid())
+  userId     String
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type       NotificationType
+  title      String
+  message    String           @db.Text
+  entityType String?
+  entityId   String?
+  actionUrl  String?
+  readAt     DateTime?
+  createdAt  DateTime         @default(now())
+  expiresAt  DateTime?
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id      String           @id @default(cuid())
+  userId  String
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type    NotificationType
+  enabled Boolean          @default(true)
+
+  @@unique([userId, type])
+  @@map("notification_preferences")
+}
+
+model NotificationRule {
+  id                       String           @id @default(cuid())
+  name                     String
+  type                     NotificationType
+  offsetMinutesBeforeEvent Int
+  isActive                 Boolean          @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("notification_rules")
 }

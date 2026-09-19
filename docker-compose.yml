@@ -9,7 +9,9 @@ services:
       MYSQL_USER: test_mela
       MYSQL_PASSWORD: test_mela
     ports:
-      - "3306:3306"
+      # Host port 3307 (not 3306) — a local MySQL install (Laragon, XAMPP,
+      # etc.) commonly already owns 3306 on Windows dev machines.
+      - "3307:3306"
     volumes:
       - test-mela-mysql-data:/var/lib/mysql
     healthcheck:

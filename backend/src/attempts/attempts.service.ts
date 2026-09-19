@@ -280,6 +280,19 @@ export class AttemptsService {
   }
 
   /**
+   * Force-finalizes an attempt regardless of owner, for callers (like the
+   * Live Test integrity/expiry sweeps) that already know the attemptId and
+   * have their own authorization context. Reuses the same scoring path as
+   * every other submission — no duplicate scoring logic.
+   */
+  async forceFinalize(
+    attemptId: string,
+    status: 'SUBMITTED' | 'AUTO_SUBMITTED' = 'AUTO_SUBMITTED',
+  ) {
+    return this.finalize(attemptId, status);
+  }
+
+  /**
    * The only place a score is ever written. Always recomputed server-side
    * from QuestionOption.isCorrect — a client can never supply or influence
    * the score, correct/incorrect counts, or marks awarded.

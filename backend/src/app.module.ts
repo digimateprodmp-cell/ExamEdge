@@ -23,6 +23,13 @@ import { BatchesModule } from './batches/batches.module';
 import { CoinsModule } from './coins/coins.module';
 import { CouponsModule } from './coupons/coupons.module';
 import { PaymentsModule } from './payments/payments.module';
+import { SystemModule } from './system/system.module';
+import { ExamsModule } from './exams/exams.module';
+import { StudentProfileModule } from './student-profile/student-profile.module';
+import { LiveTestsModule } from './live-tests/live-tests.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { SlotsModule } from './slots/slots.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -44,7 +51,14 @@ import { PaymentsModule } from './payments/payments.module';
     BatchesModule,
     CoinsModule,
     CouponsModule,
+    SubscriptionsModule,
+    SlotsModule,
     PaymentsModule,
+    SystemModule,
+    ExamsModule,
+    StudentProfileModule,
+    LiveTestsModule,
+    NotificationsModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },

@@ -219,3 +219,70 @@ export interface CoinTransaction {
   reason: string;
   createdAt: string;
 }
+
+export type LiveTestStatusValue =
+  | 'UPCOMING'
+  | 'COUNTDOWN'
+  | 'LIVE'
+  | 'ENDED'
+  | 'CANCELLED'
+  | 'RESULTS_AVAILABLE';
+
+export interface LiveTest {
+  id: string;
+  title: string;
+  examCycleId?: string | null;
+  testId: string;
+  startAt: string;
+  endAt: string;
+  durationMinutes: number;
+  timezone: string;
+  allowLateEntry: boolean;
+  lateEntryCutoffAt?: string | null;
+  isFree: boolean;
+  price: string;
+  status: LiveTestStatusValue;
+  instructions?: string | null;
+  integrityPolicyId?: string | null;
+  resultVisibility: 'IMMEDIATE' | 'MANUAL' | 'SCHEDULED';
+  test?: { titleEn: string };
+  _count?: { attempts: number; slots: number };
+  participantCounts?: { status: string; count: number }[];
+  auditLogs?: { id: string; action: string; createdAt: string; metadata: unknown }[];
+}
+
+export interface IntegrityPolicy {
+  id: string;
+  name: string;
+  config: Record<string, unknown>;
+  isActive: boolean;
+}
+
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  description?: string | null;
+  priceMonthly: string;
+  priceYearly: string;
+  isActive: boolean;
+  entitlements?: { id: string; examId?: string | null; liveTestsLimit?: number | null }[];
+}
+
+export interface Subscription {
+  id: string;
+  userId: string;
+  user?: { id: string; name: string; email: string };
+  planId: string;
+  plan?: SubscriptionPlan;
+  startAt: string;
+  endAt: string;
+  status: 'ACTIVE' | 'EXPIRED' | 'CANCELLED';
+}
+
+export interface NotificationRule {
+  id: string;
+  name: string;
+  type: string;
+  offsetMinutesBeforeEvent: number;
+  isActive: boolean;
+}

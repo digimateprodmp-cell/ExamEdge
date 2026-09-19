@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE `live_tests` ADD COLUMN `isFree` BOOLEAN NOT NULL DEFAULT true,
+    ADD COLUMN `price` DECIMAL(10, 2) NOT NULL DEFAULT 0;

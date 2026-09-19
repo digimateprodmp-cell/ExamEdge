@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
+  Bell,
   BookOpen,
   Coins,
   CreditCard,
@@ -11,6 +12,7 @@ import {
   LayoutDashboard,
   Layers,
   Newspaper,
+  Radio,
   ShieldCheck,
   Ticket,
   Users,
@@ -25,6 +27,9 @@ const NAV = [
   { href: '/catalog/courses', label: 'Courses', icon: GraduationCap },
   { href: '/test-series', label: 'Test Series', icon: BookOpen },
   { href: '/batches', label: 'Batches', icon: Users },
+  { href: '/live-tests', label: 'Live Tests', icon: Radio },
+  { href: '/subscriptions', label: 'Subscriptions', icon: GraduationCap },
+  { href: '/notifications', label: 'Notification Rules', icon: Bell },
   { href: '/content/notes', label: 'Notes', icon: FileText },
   { href: '/content/videos', label: 'Videos', icon: Video },
   { href: '/content/blogs', label: 'Blogs', icon: Newspaper },

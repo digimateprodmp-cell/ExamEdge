@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { BookOpen, Coins, GraduationCap, Ticket } from 'lucide-react';
+import { BookOpen, Coins, GraduationCap, Radio, Ticket } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { RequireAuth } from '@/components/shared/require-auth';
 import { useAuth } from '@/hooks/use-auth';
@@ -19,6 +19,7 @@ function DashboardContent() {
   const { user } = useAuth();
 
   const tiles = [
+    { href: '/live-tests', icon: Radio, title: 'Live Tests', desc: 'Scheduled, proctored tests' },
     { href: '/my-coupons', icon: Ticket, title: t('myCoupons'), desc: t('myCouponsDesc') },
     { href: '/coins', icon: Coins, title: t('myCoins'), desc: t('myCoinsDesc') },
     { href: '/my-test-series', icon: GraduationCap, title: t('activeCourses'), desc: t('activeCoursesDesc') },

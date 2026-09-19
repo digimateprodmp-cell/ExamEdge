@@ -242,7 +242,7 @@ export interface CouponUsage {
   coupon: Coupon;
 }
 
-export type PaymentItemType = 'COURSE' | 'TEST_SERIES' | 'BATCH' | 'NOTE_VOLUME';
+export type PaymentItemType = 'COURSE' | 'TEST_SERIES' | 'BATCH' | 'NOTE_VOLUME' | 'SLOT_BOOKING';
 export type PaymentStatusValue = 'CREATED' | 'PAID' | 'FAILED' | 'REFUNDED';
 
 export interface Payment {
@@ -253,5 +253,134 @@ export interface Payment {
   status: PaymentStatusValue;
   itemType: PaymentItemType;
   itemId: string;
+  createdAt: string;
+}
+
+// ============================================================
+// Exam layer / Live Test / slots / subscriptions / notifications
+// ============================================================
+
+export interface Exam {
+  id: string;
+  nameEn: string;
+  nameHi?: string | null;
+  slug: string;
+  category: string;
+  cycles?: ExamCycle[];
+}
+
+export interface ExamCycle {
+  id: string;
+  examId: string;
+  year: number;
+  courseId?: string | null;
+  exam?: Exam;
+}
+
+export interface StudentExamProfile {
+  id: string;
+  userId: string;
+  examCycleId: string;
+  targetYear?: number | null;
+  prepStatus: 'ACTIVE' | 'PAUSED' | 'COMPLETED';
+  preferredLanguage: Language;
+  isPrimary: boolean;
+  isActive: boolean;
+  examCycle: ExamCycle;
+}
+
+export type LiveTestStatusValue =
+  | 'UPCOMING'
+  | 'COUNTDOWN'
+  | 'LIVE'
+  | 'ENDED'
+  | 'CANCELLED'
+  | 'RESULTS_AVAILABLE';
+
+export interface LiveTest {
+  id: string;
+  title: string;
+  examCycleId?: string | null;
+  testId: string;
+  startAt: string;
+  endAt: string;
+  durationMinutes: number;
+  timezone: string;
+  allowLateEntry: boolean;
+  lateEntryCutoffAt?: string | null;
+  isFree: boolean;
+  price: string;
+  status: LiveTestStatusValue;
+  instructions?: string | null;
+  resultVisibility: 'IMMEDIATE' | 'MANUAL' | 'SCHEDULED';
+  test?: { titleEn: string; titleHi?: string | null; durationMinutes: number };
+}
+
+export type LiveAttemptStatusValue =
+  | 'NOT_STARTED'
+  | 'IN_PROGRESS'
+  | 'SUBMITTED'
+  | 'AUTO_SUBMITTED'
+  | 'TERMINATED_FOR_VIOLATION';
+
+export interface IntegrityPolicyConfig {
+  blockedShortcuts?: string[];
+  blockCopy?: boolean;
+  blockPaste?: boolean;
+  blockPrint?: boolean;
+  blockDevTools?: boolean;
+  blockTextSelection?: boolean;
+}
+
+export interface LiveTestAttemptState {
+  liveTestAttemptId: string;
+  liveTestId: string;
+  status: LiveAttemptStatusValue;
+  integrityWarningCount: number;
+  joinedAt: string;
+  integrityPolicyConfig: IntegrityPolicyConfig | null;
+  attempt: Attempt;
+}
+
+export interface IntegrityEventResult {
+  action: 'LOGGED' | 'WARNING' | 'TERMINATED';
+  warningCount: number;
+  terminated?: boolean;
+  alreadyTerminated?: boolean;
+}
+
+export interface TestSlot {
+  id: string;
+  liveTestId: string;
+  startAt: string;
+  endAt: string;
+  timezone: string;
+  capacity: number;
+  bookedCount: number;
+  status: 'OPEN' | 'FULL' | 'CLOSED' | 'CANCELLED';
+}
+
+export interface SlotBooking {
+  id: string;
+  slotId: string;
+  status: 'CONFIRMED' | 'CANCELLED';
+  slot: TestSlot & { liveTest: { title: string; testId: string } };
+}
+
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  description?: string | null;
+  priceMonthly: string;
+  priceYearly: string;
+}
+
+export interface Notification {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  actionUrl?: string | null;
+  readAt?: string | null;
   createdAt: string;
 }

@@ -60,6 +60,7 @@ export interface TestInput {
 export const testsService = {
   listByVolume: (token: string, testVolumeId: string) =>
     apiFetch<Test[]>(`/tests/admin?testVolumeId=${testVolumeId}`, { token }),
+  listAll: (token: string) => apiFetch<Test[]>('/tests/admin', { token }),
   get: (token: string, id: string) => apiFetch<Test>(`/tests/admin/${id}`, { token }),
   create: (token: string, data: TestInput) => apiFetch<Test>('/tests', { method: 'POST', token, body: data }),
   update: (token: string, id: string, data: Partial<TestInput>) =>
