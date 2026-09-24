@@ -11,7 +11,7 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import { Difficulty, QuestionType } from '@prisma/client';
+import { Difficulty, QuestionSourceType, QuestionType } from '@prisma/client';
 
 export class QuestionOptionInputDto {
   @IsOptional()
@@ -39,11 +39,35 @@ export class QuestionOptionInputDto {
 export class CreateQuestionDto {
   @IsOptional()
   @IsString()
+  examId?: string;
+
+  @IsOptional()
+  @IsString()
+  examCycleId?: string;
+
+  @IsOptional()
+  @IsString()
+  syllabusVersionId?: string;
+
+  @IsOptional()
+  @IsString()
   subjectId?: string;
 
   @IsOptional()
   @IsString()
   topicId?: string;
+
+  @IsOptional()
+  @IsString()
+  subTopicId?: string;
+
+  @IsOptional()
+  @IsEnum(QuestionSourceType)
+  source?: QuestionSourceType;
+
+  @IsOptional()
+  @IsString()
+  sourceReference?: string;
 
   @IsOptional()
   @IsEnum(QuestionType)
@@ -89,11 +113,35 @@ export class CreateQuestionDto {
 export class UpdateQuestionDto {
   @IsOptional()
   @IsString()
+  examId?: string;
+
+  @IsOptional()
+  @IsString()
+  examCycleId?: string;
+
+  @IsOptional()
+  @IsString()
+  syllabusVersionId?: string;
+
+  @IsOptional()
+  @IsString()
   subjectId?: string;
 
   @IsOptional()
   @IsString()
   topicId?: string;
+
+  @IsOptional()
+  @IsString()
+  subTopicId?: string;
+
+  @IsOptional()
+  @IsEnum(QuestionSourceType)
+  source?: QuestionSourceType;
+
+  @IsOptional()
+  @IsString()
+  sourceReference?: string;
 
   @IsOptional()
   @IsEnum(QuestionType)

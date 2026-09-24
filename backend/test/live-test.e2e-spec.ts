@@ -1,5 +1,6 @@
 process.env.RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_test_dummy';
-process.env.RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'dummy_secret_for_e2e';
+process.env.RAZORPAY_KEY_SECRET =
+  process.env.RAZORPAY_KEY_SECRET || 'dummy_secret_for_e2e';
 
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
@@ -22,11 +23,19 @@ describe('Live Test engine (e2e)', () => {
   const createdLiveTestIds: string[] = [];
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+    const moduleRef = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
     app = moduleRef.createNestApplication();
     app.use(cookieParser());
     app.setGlobalPrefix('api');
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: false }));
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        transform: true,
+        forbidNonWhitelisted: false,
+      }),
+    );
     await app.init();
 
     prisma = app.get(PrismaService);
@@ -43,21 +52,35 @@ describe('Live Test engine (e2e)', () => {
       .send({ email: 'student@testmela.com', password: 'Student@123' })
       .expect(200);
     studentToken = studentLogin.body.data.accessToken;
-    const student = await prisma.user.findUniqueOrThrow({ where: { email: 'student@testmela.com' } });
+    const student = await prisma.user.findUniqueOrThrow({
+      where: { email: 'student@testmela.com' },
+    });
     studentId = student.id;
   });
 
   afterAll(async () => {
     // Clean up everything this file created so re-runs stay idempotent.
-    await prisma.examIntegrityEvent.deleteMany({ where: { liveTestId: { in: createdLiveTestIds } } });
-    await prisma.liveTestAttempt.deleteMany({ where: { liveTestId: { in: createdLiveTestIds } } });
-    await prisma.liveTestAuditLog.deleteMany({ where: { liveTestId: { in: createdLiveTestIds } } });
-    await prisma.testSlot.deleteMany({ where: { liveTestId: { in: createdLiveTestIds } } });
-    await prisma.liveTest.deleteMany({ where: { id: { in: createdLiveTestIds } } });
+    await prisma.examIntegrityEvent.deleteMany({
+      where: { liveTestId: { in: createdLiveTestIds } },
+    });
+    await prisma.liveTestAttempt.deleteMany({
+      where: { liveTestId: { in: createdLiveTestIds } },
+    });
+    await prisma.liveTestAuditLog.deleteMany({
+      where: { liveTestId: { in: createdLiveTestIds } },
+    });
+    await prisma.testSlot.deleteMany({
+      where: { liveTestId: { in: createdLiveTestIds } },
+    });
+    await prisma.liveTest.deleteMany({
+      where: { id: { in: createdLiveTestIds } },
+    });
     await app.close();
   });
 
-  async function createLiveTest(overrides: Partial<{ startAt: Date; endAt: Date; allowLateEntry: boolean }>) {
+  async function createLiveTest(
+    overrides: Partial<{ startAt: Date; endAt: Date; allowLateEntry: boolean }>,
+  ) {
     const now = Date.now();
     const liveTest = await prisma.liveTest.create({
       data: {
@@ -111,7 +134,9 @@ describe('Live Test engine (e2e)', () => {
       .set('Authorization', `Bearer ${studentToken}`)
       .expect(200);
 
-    const returnedExpiresAt = new Date(joinRes.body.data.attempt.expiresAt).getTime();
+    const returnedExpiresAt = new Date(
+      joinRes.body.data.attempt.expiresAt,
+    ).getTime();
     // Must equal the live test's endAt (within a second of clock skew), NOT
     // now + durationMinutes*60s, which would be ~5 minutes away instead of ~90s.
     expect(Math.abs(returnedExpiresAt - endAt.getTime())).toBeLessThan(2000);
@@ -134,7 +159,9 @@ describe('Live Test engine (e2e)', () => {
     await new Promise((r) => setTimeout(r, 3500)); // let the end time pass
 
     await request(app.getHttpServer())
-      .patch(`/api/live-tests/attempts/${liveTestAttemptId}/answers/${firstQuestion.testQuestionId}`)
+      .patch(
+        `/api/live-tests/attempts/${liveTestAttemptId}/answers/${firstQuestion.testQuestionId}`,
+      )
       .set('Authorization', `Bearer ${studentToken}`)
       .send({ selectedOptionId: firstQuestion.options[0].id })
       .expect(400);
@@ -152,10 +179,14 @@ describe('Live Test engine (e2e)', () => {
     const correctOption = await prisma.questionOption.findFirstOrThrow({
       where: { questionId: firstQuestion.questionId, isCorrect: true },
     });
-    const question = await prisma.question.findUniqueOrThrow({ where: { id: firstQuestion.questionId } });
+    const question = await prisma.question.findUniqueOrThrow({
+      where: { id: firstQuestion.questionId },
+    });
 
     await request(app.getHttpServer())
-      .patch(`/api/live-tests/attempts/${liveTestAttemptId}/answers/${firstQuestion.testQuestionId}`)
+      .patch(
+        `/api/live-tests/attempts/${liveTestAttemptId}/answers/${firstQuestion.testQuestionId}`,
+      )
       .set('Authorization', `Bearer ${studentToken}`)
       .send({ selectedOptionId: correctOption.id })
       .expect(200);
@@ -174,10 +205,16 @@ describe('Live Test engine (e2e)', () => {
       .expect(200);
     expect(second.body.data.action).toBe('TERMINATED');
 
-    const finalAttempt = await prisma.liveTestAttempt.findUniqueOrThrow({ where: { id: liveTestAttemptId } });
-    expect(finalAttempt.status).toBe(LiveAttemptStatus.TERMINATED_FOR_VIOLATION);
+    const finalAttempt = await prisma.liveTestAttempt.findUniqueOrThrow({
+      where: { id: liveTestAttemptId },
+    });
+    expect(finalAttempt.status).toBe(
+      LiveAttemptStatus.TERMINATED_FOR_VIOLATION,
+    );
 
-    const testAttempt = await prisma.testAttempt.findUniqueOrThrow({ where: { id: finalAttempt.testAttemptId } });
+    const testAttempt = await prisma.testAttempt.findUniqueOrThrow({
+      where: { id: finalAttempt.testAttemptId },
+    });
     expect(testAttempt.status).toBe('AUTO_SUBMITTED');
     expect(Number(testAttempt.score)).toBe(Number(question.marks));
     expect(testAttempt.correctCount).toBe(1);
@@ -193,7 +230,12 @@ describe('Live Test engine (e2e)', () => {
   it('two concurrent reservations on a 1-seat slot: exactly one succeeds', async () => {
     const liveTest = await createLiveTest({});
     const slot = await prisma.testSlot.create({
-      data: { liveTestId: liveTest.id, startAt: liveTest.startAt, endAt: liveTest.endAt, capacity: 1 },
+      data: {
+        liveTestId: liveTest.id,
+        startAt: liveTest.startAt,
+        endAt: liveTest.endAt,
+        capacity: 1,
+      },
     });
 
     const otherUser = await prisma.user.create({
@@ -215,7 +257,9 @@ describe('Live Test engine (e2e)', () => {
     expect(fulfilled).toHaveLength(1);
     expect(rejected).toHaveLength(1);
 
-    const reloadedSlot = await prisma.testSlot.findUniqueOrThrow({ where: { id: slot.id } });
+    const reloadedSlot = await prisma.testSlot.findUniqueOrThrow({
+      where: { id: slot.id },
+    });
     expect(reloadedSlot.bookedCount).toBe(1);
 
     await prisma.slotReservation.deleteMany({ where: { slotId: slot.id } });

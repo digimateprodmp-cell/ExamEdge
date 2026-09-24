@@ -1,4 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { QuestionServingEligibility } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import {
   AddTestQuestionDto,
@@ -69,7 +74,35 @@ export class TestsService {
     });
   }
 
+  /**
+   * `Test.bilingualRequired` (default true for new tests, backfilled false
+   * on the pre-existing 106 legacy tests so their current composition stays
+   * truthful) gates whether a question needs `servingEligibility ===
+   * FULLY_ELIGIBLE` to be attached. This is the enforcement point for rule 5
+   * ("newly curated bilingual-only question sets") and rule 6 ("new tests
+   * explicitly configured as BILINGUAL_REQUIRED").
+   */
   async addQuestion(testId: string, dto: AddTestQuestionDto) {
+    const test = await this.prisma.test.findUniqueOrThrow({
+      where: { id: testId },
+    });
+
+    if (test.bilingualRequired) {
+      const question = await this.prisma.question.findUnique({
+        where: { id: dto.questionId },
+        select: { servingEligibility: true, status: true },
+      });
+      if (!question) throw new NotFoundException('Question not found');
+      if (
+        question.servingEligibility !==
+        QuestionServingEligibility.FULLY_ELIGIBLE
+      ) {
+        throw new BadRequestException(
+          `This test requires fully bilingual-validated questions. The selected question is not eligible (status: ${question.status}). Either publish the question first or mark this test as not bilingual-required.`,
+        );
+      }
+    }
+
     const order =
       dto.order ??
       (await this.prisma.testQuestion.count({ where: { testId } }));

@@ -69,6 +69,10 @@ export class CreateTestDto {
   @IsOptional()
   @IsDateString()
   endAt?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  bilingualRequired?: boolean;
 }
 
 export class UpdateTestDto extends PartialType(CreateTestDto) {}

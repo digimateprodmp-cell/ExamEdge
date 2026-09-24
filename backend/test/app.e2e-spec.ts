@@ -1,5 +1,6 @@
 process.env.RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_test_dummy';
-process.env.RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'dummy_secret_for_e2e';
+process.env.RAZORPAY_KEY_SECRET =
+  process.env.RAZORPAY_KEY_SECRET || 'dummy_secret_for_e2e';
 
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
@@ -16,11 +17,19 @@ describe('Test Mela API (e2e)', () => {
   let studentToken: string;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+    const moduleRef = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
     app = moduleRef.createNestApplication();
     app.use(cookieParser());
     app.setGlobalPrefix('api');
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: false }));
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        transform: true,
+        forbidNonWhitelisted: false,
+      }),
+    );
     await app.init();
 
     prisma = app.get(PrismaService);
@@ -74,10 +83,14 @@ describe('Test Mela API (e2e)', () => {
     const correctOption = await prisma.questionOption.findFirstOrThrow({
       where: { questionId: firstQuestion.questionId, isCorrect: true },
     });
-    const question = await prisma.question.findUniqueOrThrow({ where: { id: firstQuestion.questionId } });
+    const question = await prisma.question.findUniqueOrThrow({
+      where: { id: firstQuestion.questionId },
+    });
 
     const tamperRes = await request(app.getHttpServer())
-      .patch(`/api/attempts/${attempt.id}/answers/${firstQuestion.testQuestionId}`)
+      .patch(
+        `/api/attempts/${attempt.id}/answers/${firstQuestion.testQuestionId}`,
+      )
       .set('Authorization', `Bearer ${studentToken}`)
       .send({
         selectedOptionId: correctOption.id,
@@ -105,7 +118,9 @@ describe('Test Mela API (e2e)', () => {
   });
 
   it('rejects a payment verification with a forged signature', async () => {
-    const student = await prisma.user.findUniqueOrThrow({ where: { email: 'student@testmela.com' } });
+    const student = await prisma.user.findUniqueOrThrow({
+      where: { email: 'student@testmela.com' },
+    });
 
     const payment = await prisma.payment.create({
       data: {
@@ -128,7 +143,9 @@ describe('Test Mela API (e2e)', () => {
       })
       .expect(400);
 
-    const reloaded = await prisma.payment.findUniqueOrThrow({ where: { id: payment.id } });
+    const reloaded = await prisma.payment.findUniqueOrThrow({
+      where: { id: payment.id },
+    });
     expect(reloaded.status).toBe(PaymentStatus.FAILED);
   });
 });

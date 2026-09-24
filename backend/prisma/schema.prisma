@@ -188,12 +188,27 @@ model Topic {
   nameEn         String
   nameHi         String?
   questions      Question[]
+  subTopics      SubTopic[]
   syllabusTopics SyllabusTopic[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
   @@index([subjectId])
   @@map("topics")
+}
+
+model SubTopic {
+  id        String     @id @default(cuid())
+  topicId   String
+  topic     Topic      @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  nameEn    String
+  nameHi    String?
+  questions Question[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([topicId])
+  @@map("sub_topics")
 }
 
 model Course {
@@ -311,22 +326,23 @@ model Enrollment {
 // ============================================================
 
 model Test {
-  id               String     @id @default(cuid())
-  testVolumeId     String
-  testVolume       TestVolume @relation(fields: [testVolumeId], references: [id], onDelete: Cascade)
-  titleEn          String
-  titleHi          String?
-  instructionsEn   String?    @db.Text
-  instructionsHi   String?    @db.Text
-  type             TestType   @default(PRACTICE)
-  status           TestStatus @default(DRAFT)
-  durationMinutes  Int        @default(60)
-  marksPerQuestion Decimal    @default(1) @db.Decimal(6, 2)
-  negativeMarks    Decimal    @default(0) @db.Decimal(6, 2)
-  isFree           Boolean    @default(false)
-  price            Decimal    @default(0) @db.Decimal(10, 2)
-  startAt          DateTime?
-  endAt            DateTime?
+  id                String     @id @default(cuid())
+  testVolumeId      String
+  testVolume        TestVolume @relation(fields: [testVolumeId], references: [id], onDelete: Cascade)
+  titleEn           String
+  titleHi           String?
+  instructionsEn    String?    @db.Text
+  instructionsHi    String?    @db.Text
+  type              TestType   @default(PRACTICE)
+  status            TestStatus @default(DRAFT)
+  durationMinutes   Int        @default(60)
+  marksPerQuestion  Decimal    @default(1) @db.Decimal(6, 2)
+  negativeMarks     Decimal    @default(0) @db.Decimal(6, 2)
+  isFree            Boolean    @default(false)
+  price             Decimal    @default(0) @db.Decimal(10, 2)
+  startAt           DateTime?
+  endAt             DateTime?
+  bilingualRequired Boolean    @default(true)
 
   testQuestions TestQuestion[]
   attempts      TestAttempt[]
@@ -340,18 +356,62 @@ model Test {
   @@map("tests")
 }
 
+enum QuestionStatus {
+  DRAFT
+  MISSING_ENGLISH
+  MISSING_HINDI
+  LANGUAGE_REVIEW_REQUIRED
+  PENDING_REVIEW
+  PUBLISHED
+  REJECTED
+  ARCHIVED
+}
+
+enum QuestionSourceType {
+  MANUAL
+  IMPORTED
+  PREVIOUS_YEAR
+  AI_GENERATED
+  CURRENT_AFFAIRS
+}
+
+// Separate from QuestionStatus on purpose: `status` is always the truthful
+// content/language state. `servingEligibility` is the (temporary, for
+// grandfathered legacy content only) answer to "can this be shown to a
+// student right now" — it never overrides or hides what `status` says.
+enum QuestionServingEligibility {
+  FULLY_ELIGIBLE // status = PUBLISHED, no restrictions
+  LEGACY_TEMPORARY // grandfathered pre-existing content, practice-only, time-boxed
+  NOT_ELIGIBLE // draft/rejected/archived, or new incomplete content - never served
+}
+
 model Question {
-  id            String       @id @default(cuid())
-  subjectId     String?
-  subject       Subject?     @relation(fields: [subjectId], references: [id])
-  topicId       String?
-  topic         Topic?       @relation(fields: [topicId], references: [id])
-  type          QuestionType @default(SINGLE_CHOICE)
-  difficulty    Difficulty   @default(MEDIUM)
-  marks         Decimal      @default(1) @db.Decimal(6, 2)
-  negativeMarks Decimal      @default(0) @db.Decimal(6, 2)
-  createdById   String?
-  createdBy     User?        @relation("QuestionCreatedBy", fields: [createdById], references: [id])
+  id                    String                     @id @default(cuid())
+  examId                String?
+  exam                  Exam?                      @relation(fields: [examId], references: [id])
+  examCycleId           String?
+  examCycle             ExamCycle?                 @relation(fields: [examCycleId], references: [id])
+  syllabusVersionId     String?
+  syllabusVersion       SyllabusVersion?           @relation(fields: [syllabusVersionId], references: [id])
+  subjectId             String?
+  subject               Subject?                   @relation(fields: [subjectId], references: [id])
+  topicId               String?
+  topic                 Topic?                     @relation(fields: [topicId], references: [id])
+  subTopicId            String?
+  subTopic              SubTopic?                  @relation(fields: [subTopicId], references: [id])
+  type                  QuestionType               @default(SINGLE_CHOICE)
+  difficulty            Difficulty                 @default(MEDIUM)
+  marks                 Decimal                    @default(1) @db.Decimal(6, 2)
+  negativeMarks         Decimal                    @default(0) @db.Decimal(6, 2)
+  status                QuestionStatus             @default(DRAFT)
+  source                QuestionSourceType         @default(MANUAL)
+  sourceReference       String?
+  // Set ONLY by the one-time legacy backfill script — never settable via the
+  // create/update API, so no newly-created question can ever acquire it.
+  isLegacyGrandfathered Boolean                    @default(false)
+  servingEligibility    QuestionServingEligibility @default(NOT_ELIGIBLE)
+  createdById           String?
+  createdBy             User?                      @relation("QuestionCreatedBy", fields: [createdById], references: [id])
 
   translations  QuestionTranslation[]
   options       QuestionOption[]
@@ -363,6 +423,12 @@ model Question {
 
   @@index([subjectId])
   @@index([topicId])
+  @@index([subTopicId])
+  @@index([examId])
+  @@index([examCycleId])
+  @@index([syllabusVersionId])
+  @@index([status])
+  @@index([servingEligibility])
   @@map("questions")
 }
 
@@ -710,7 +776,8 @@ model Exam {
   category ExamCategory @default(OTHER)
   isActive Boolean      @default(true)
 
-  cycles ExamCycle[]
+  cycles    ExamCycle[]
+  questions Question[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -730,6 +797,7 @@ model ExamCycle {
   syllabusVersions    SyllabusVersion[]
   studentExamProfiles StudentExamProfile[]
   liveTests           LiveTest[]
+  questions           Question[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -745,7 +813,8 @@ model SyllabusVersion {
   version     Int       @default(1)
   isActive    Boolean   @default(true)
 
-  topics SyllabusTopic[]
+  topics    SyllabusTopic[]
+  questions Question[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -884,6 +953,7 @@ model LiveTest {
   resultVisibility   ResultVisibility @default(IMMEDIATE)
   resultVisibleAt    DateTime?
   randomizeQuestions Boolean          @default(false)
+  bilingualRequired  Boolean          @default(true)
   createdById        String?
   createdBy          User?            @relation("LiveTestCreatedBy", fields: [createdById], references: [id])
 

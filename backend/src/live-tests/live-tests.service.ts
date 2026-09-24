@@ -5,7 +5,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { LiveAttemptStatus, LiveTestStatus, Prisma } from '@prisma/client';
+import {
+  LiveAttemptStatus,
+  LiveTestStatus,
+  Prisma,
+  QuestionServingEligibility,
+} from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { LiveTestStateService } from './live-test-state.service';
 import { AttemptsService } from '../attempts/attempts.service';
@@ -113,12 +118,41 @@ export class LiveTestsService {
     };
   }
 
+  /**
+   * `bilingualRequired` defaults true (rule 6): a NEW Live Test must be
+   * created against a paper whose every question is already
+   * `FULLY_ELIGIBLE`, checked here at creation time — not retroactively
+   * against any live test that already exists, and not re-checked later if
+   * the paper's questions somehow change. An admin who explicitly wants a
+   * legacy/practice-oriented Live Test can pass `bilingualRequired: false`.
+   */
   async create(actorId: string, dto: CreateLiveTestDto) {
+    const bilingualRequired = dto.bilingualRequired ?? true;
+
+    if (bilingualRequired) {
+      const ineligible = await this.prisma.testQuestion.count({
+        where: {
+          testId: dto.testId,
+          question: {
+            servingEligibility: {
+              not: QuestionServingEligibility.FULLY_ELIGIBLE,
+            },
+          },
+        },
+      });
+      if (ineligible > 0) {
+        throw new BadRequestException(
+          `This Live Test requires fully bilingual-validated questions, but the selected paper has ${ineligible} question(s) that are not yet fully eligible (legacy or incomplete content). Either finish reviewing those questions first, choose a different paper, or explicitly set bilingualRequired: false for a legacy-content Live Test.`,
+        );
+      }
+    }
+
     const liveTest = await this.prisma.liveTest.create({
       data: {
         title: dto.title,
         examCycleId: dto.examCycleId,
         testId: dto.testId,
+        bilingualRequired,
         startAt: new Date(dto.startAt),
         endAt: new Date(dto.endAt),
         durationMinutes: dto.durationMinutes,

@@ -21,6 +21,11 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 export class QuestionsController {
   constructor(private readonly questionsService: QuestionsService) {}
 
+  @Get('stats')
+  stats() {
+    return this.questionsService.stats();
+  }
+
   @Get()
   findAll(
     @Query() pagination: PaginationDto,
@@ -51,5 +56,20 @@ export class QuestionsController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.questionsService.remove(id);
+  }
+
+  @Post(':id/publish')
+  publish(@Param('id') id: string) {
+    return this.questionsService.publish(id);
+  }
+
+  @Post(':id/reject')
+  reject(@Param('id') id: string) {
+    return this.questionsService.reject(id);
+  }
+
+  @Post(':id/archive')
+  archive(@Param('id') id: string) {
+    return this.questionsService.archive(id);
   }
 }

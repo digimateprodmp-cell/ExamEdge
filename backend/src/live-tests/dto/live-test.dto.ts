@@ -71,6 +71,10 @@ export class CreateLiveTestDto {
   @IsOptional()
   @IsBoolean()
   randomizeQuestions?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  bilingualRequired?: boolean;
 }
 
 export class UpdateLiveTestDto extends PartialType(CreateLiveTestDto) {}
