@@ -108,6 +108,11 @@ export class CreateQuestionDto {
   @ValidateNested({ each: true })
   @Type(() => QuestionOptionInputDto)
   options!: QuestionOptionInputDto[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tagIds?: string[];
 }
 
 export class UpdateQuestionDto {
@@ -182,4 +187,9 @@ export class UpdateQuestionDto {
   @ValidateNested({ each: true })
   @Type(() => QuestionOptionInputDto)
   options?: QuestionOptionInputDto[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tagIds?: string[];
 }

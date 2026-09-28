@@ -31,8 +31,14 @@ export class QuestionsController {
     @Query() pagination: PaginationDto,
     @Query('subjectId') subjectId?: string,
     @Query('topicId') topicId?: string,
+    @Query('tagId') tagId?: string,
   ) {
-    return this.questionsService.findAll({ ...pagination, subjectId, topicId });
+    return this.questionsService.findAll({
+      ...pagination,
+      subjectId,
+      topicId,
+      tagId,
+    });
   }
 
   @Get(':id')

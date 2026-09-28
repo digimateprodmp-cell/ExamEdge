@@ -12,6 +12,7 @@ import { Role } from '@prisma/client';
 import { TestsService } from './tests.service';
 import {
   AddTestQuestionDto,
+  BulkAddTestQuestionsDto,
   CreateTestDto,
   UpdateTestDto,
 } from './dto/test.dto';
@@ -68,6 +69,15 @@ export class TestsController {
   @Post(':id/questions')
   addQuestion(@Param('id') id: string, @Body() dto: AddTestQuestionDto) {
     return this.testsService.addQuestion(id, dto);
+  }
+
+  @Roles(Role.ADMIN)
+  @Post(':id/questions/bulk')
+  addQuestionsBulk(
+    @Param('id') id: string,
+    @Body() dto: BulkAddTestQuestionsDto,
+  ) {
+    return this.testsService.addQuestionsBulk(id, dto);
   }
 
   @Roles(Role.ADMIN)

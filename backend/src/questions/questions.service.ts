@@ -15,6 +15,7 @@ import { CreateQuestionDto, UpdateQuestionDto } from './dto/question.dto';
 interface QuestionListFilters extends PaginationDto {
   subjectId?: string;
   topicId?: string;
+  tagId?: string;
 }
 
 const FULL_INCLUDE = {
@@ -25,6 +26,7 @@ const FULL_INCLUDE = {
   },
   subject: true,
   topic: true,
+  tagAssignments: { include: { questionTag: true } },
 };
 
 @Injectable()
@@ -32,11 +34,12 @@ export class QuestionsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(filters: QuestionListFilters) {
-    const { page, limit, search, subjectId, topicId } = filters;
+    const { page, limit, search, subjectId, topicId, tagId } = filters;
     const where = {
       deletedAt: null,
       ...(subjectId ? { subjectId } : {}),
       ...(topicId ? { topicId } : {}),
+      ...(tagId ? { tagAssignments: { some: { questionTagId: tagId } } } : {}),
       ...(search
         ? { translations: { some: { text: { contains: search } } } }
         : {}),
@@ -113,6 +116,9 @@ export class QuestionsService {
 
       await this.writeTranslations(tx, question.id, dto);
       await this.writeOptions(tx, question.id, dto.options);
+      if (dto.tagIds) {
+        await this.writeTags(tx, question.id, dto.tagIds);
+      }
       await this.recomputeLanguageStatus(tx, question.id);
 
       return tx.question.findUniqueOrThrow({
@@ -148,6 +154,9 @@ export class QuestionsService {
       if (dto.options) {
         await tx.questionOption.deleteMany({ where: { questionId: id } });
         await this.writeOptions(tx, id, dto.options);
+      }
+      if (dto.tagIds) {
+        await this.writeTags(tx, id, dto.tagIds);
       }
       await this.recomputeLanguageStatus(tx, id);
 
@@ -336,6 +345,19 @@ export class QuestionsService {
         });
       }
     }
+  }
+
+  private async writeTags(
+    tx: Prisma.TransactionClient,
+    questionId: string,
+    tagIds: string[],
+  ) {
+    await tx.questionTagAssignment.deleteMany({ where: { questionId } });
+    if (tagIds.length === 0) return;
+    await tx.questionTagAssignment.createMany({
+      data: tagIds.map((questionTagId) => ({ questionId, questionTagId })),
+      skipDuplicates: true,
+    });
   }
 
   /**

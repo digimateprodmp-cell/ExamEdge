@@ -1,5 +1,7 @@
 import { PartialType } from '@nestjs/mapped-types';
 import {
+  ArrayMinSize,
+  IsArray,
   IsBoolean,
   IsDateString,
   IsEnum,
@@ -85,4 +87,11 @@ export class AddTestQuestionDto {
   @IsInt()
   @Min(0)
   order?: number;
+}
+
+export class BulkAddTestQuestionsDto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsString({ each: true })
+  questionIds!: string[];
 }

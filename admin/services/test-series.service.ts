@@ -68,6 +68,11 @@ export const testsService = {
   remove: (token: string, id: string) => apiFetch<void>(`/tests/${id}`, { method: 'DELETE', token }),
   addQuestion: (token: string, testId: string, questionId: string, order?: number) =>
     apiFetch(`/tests/${testId}/questions`, { method: 'POST', token, body: { questionId, order } }),
+  addQuestionsBulk: (token: string, testId: string, questionIds: string[]) =>
+    apiFetch<{ added: string[]; alreadyInTest: { questionId: string; message: string }[] }>(
+      `/tests/${testId}/questions/bulk`,
+      { method: 'POST', token, body: { questionIds } },
+    ),
   removeQuestion: (token: string, testId: string, questionId: string) =>
     apiFetch<void>(`/tests/${testId}/questions/${questionId}`, { method: 'DELETE', token }),
 };

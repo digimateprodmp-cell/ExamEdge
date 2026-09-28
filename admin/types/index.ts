@@ -84,13 +84,35 @@ export interface Test {
   negativeMarks: string;
   isFree: boolean;
   price: string;
+  bilingualRequired?: boolean;
+  sections?: TestSection[];
   testQuestions?: TestQuestionRow[];
+}
+
+export interface TestSection {
+  id: string;
+  testId: string;
+  titleEn: string;
+  titleHi?: string | null;
+  order: number;
+  questionLimit?: number | null;
+  marksPerQuestion?: string | null;
+  negativeMarks?: string | null;
+  _count?: { testQuestions: number };
 }
 
 export interface TestQuestionRow {
   id: string;
   order: number;
+  sectionId?: string | null;
   question: QuestionFull;
+}
+
+export interface QuestionTag {
+  id: string;
+  nameEn: string;
+  nameHi?: string | null;
+  _count?: { assignments: number };
 }
 
 export type QuestionType = 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE';
@@ -111,6 +133,7 @@ export interface QuestionFull {
     isCorrect: boolean;
     translations: { language: Language; text: string }[];
   }[];
+  tagAssignments?: { questionTag: QuestionTag }[];
 }
 
 export interface Batch {

@@ -17,7 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { QuestionInput, QuestionOptionInput } from '@/services/questions.service';
-import type { QuestionFull, Subject } from '@/types';
+import type { QuestionFull, QuestionTag, Subject } from '@/types';
 
 interface FormValues {
   subjectId: string;
@@ -30,6 +30,7 @@ interface FormValues {
   explanationEn: string;
   explanationHi: string;
   options: QuestionOptionInput[];
+  tagIds: string[];
 }
 
 const EMPTY_OPTIONS = (): QuestionOptionInput[] => [
@@ -52,6 +53,7 @@ function fromExisting(question?: QuestionFull): FormValues {
       explanationEn: '',
       explanationHi: '',
       options: EMPTY_OPTIONS(),
+      tagIds: [],
     };
   }
   const en = question.translations.find((t) => t.language === 'EN');
@@ -74,16 +76,19 @@ function fromExisting(question?: QuestionFull): FormValues {
         textEn: o.translations.find((t) => t.language === 'EN')?.text ?? '',
         textHi: o.translations.find((t) => t.language === 'HI')?.text ?? '',
       })),
+    tagIds: (question.tagAssignments ?? []).map((a) => a.questionTag.id),
   };
 }
 
 export function QuestionFormDialog({
   subjects,
+  tags = [],
   existing,
   trigger,
   onSubmit,
 }: {
   subjects: Subject[];
+  tags?: QuestionTag[];
   existing?: QuestionFull;
   trigger?: React.ReactNode;
   onSubmit: (input: QuestionInput) => Promise<void>;
@@ -120,6 +125,7 @@ export function QuestionFormDialog({
         explanationEn: values.explanationEn || undefined,
         explanationHi: values.explanationHi || undefined,
         options: values.options,
+        tagIds: values.tagIds,
       });
       setOpen(false);
     } finally {
@@ -207,6 +213,38 @@ export function QuestionFormDialog({
               <OptionsEditor options={values.options} lang="Hi" onChange={setOption} />
             </TabsContent>
           </Tabs>
+
+          {tags.length > 0 && (
+            <div className="space-y-1.5">
+              <Label>Tags</Label>
+              <div className="flex flex-wrap gap-2">
+                {tags.map((tag) => {
+                  const checked = values.tagIds.includes(tag.id);
+                  return (
+                    <button
+                      key={tag.id}
+                      type="button"
+                      onClick={() =>
+                        setValues((v) => ({
+                          ...v,
+                          tagIds: checked
+                            ? v.tagIds.filter((id) => id !== tag.id)
+                            : [...v.tagIds, tag.id],
+                        }))
+                      }
+                      className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                        checked
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border text-muted-foreground hover:bg-secondary'
+                      }`}
+                    >
+                      {tag.nameEn}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         <DialogFooter>

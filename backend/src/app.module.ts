@@ -14,6 +14,8 @@ import { CatalogModule } from './catalog/catalog.module';
 import { TestSeriesModule } from './test-series/test-series.module';
 import { TestsModule } from './tests/tests.module';
 import { QuestionsModule } from './questions/questions.module';
+import { QuestionTagsModule } from './question-tags/question-tags.module';
+import { TestSectionsModule } from './test-sections/test-sections.module';
 import { AttemptsModule } from './attempts/attempts.module';
 import { NotesModule } from './notes/notes.module';
 import { VideosModule } from './videos/videos.module';
@@ -43,6 +45,8 @@ import { NotificationsModule } from './notifications/notifications.module';
     TestSeriesModule,
     TestsModule,
     QuestionsModule,
+    QuestionTagsModule,
+    TestSectionsModule,
     AttemptsModule,
     NotesModule,
     VideosModule,

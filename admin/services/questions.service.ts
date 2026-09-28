@@ -1,5 +1,5 @@
 import { apiFetch } from '@/lib/api';
-import type { Paginated, QuestionFull } from '@/types';
+import type { Paginated, QuestionFull, QuestionTag } from '@/types';
 
 export interface QuestionOptionInput {
   id?: string;
@@ -21,12 +21,25 @@ export interface QuestionInput {
   explanationEn?: string;
   explanationHi?: string;
   options: QuestionOptionInput[];
+  tagIds?: string[];
+}
+
+export interface QuestionListOptions {
+  page?: number;
+  limit?: number;
+  subjectId?: string;
+  topicId?: string;
+  tagId?: string;
+  search?: string;
 }
 
 export const questionsService = {
-  list: (token: string, page = 1, limit = 20, subjectId?: string, search?: string) => {
+  list: (token: string, opts: QuestionListOptions = {}) => {
+    const { page = 1, limit = 20, subjectId, topicId, tagId, search } = opts;
     const params = new URLSearchParams({ page: String(page), limit: String(limit) });
     if (subjectId) params.set('subjectId', subjectId);
+    if (topicId) params.set('topicId', topicId);
+    if (tagId) params.set('tagId', tagId);
     if (search) params.set('search', search);
     return apiFetch<Paginated<QuestionFull>>(`/questions?${params}`, { token });
   },

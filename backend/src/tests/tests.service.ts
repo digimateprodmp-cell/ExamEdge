@@ -7,6 +7,7 @@ import { QuestionServingEligibility } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import {
   AddTestQuestionDto,
+  BulkAddTestQuestionsDto,
   CreateTestDto,
   UpdateTestDto,
 } from './dto/test.dto';
@@ -44,6 +45,10 @@ export class TestsService {
     return this.prisma.test.findFirstOrThrow({
       where: { id, deletedAt: null },
       include: {
+        sections: {
+          orderBy: { order: 'asc' },
+          include: { _count: { select: { testQuestions: true } } },
+        },
         testQuestions: {
           orderBy: { order: 'asc' },
           include: {
@@ -114,6 +119,74 @@ export class TestsService {
   removeQuestion(testId: string, questionId: string) {
     return this.prisma.testQuestion.delete({
       where: { testId_questionId: { testId, questionId } },
+    });
+  }
+
+  /**
+   * Same duplicate-prevention/bilingual-gate rules as `addQuestion`, but for
+   * a test with no sections (the 106 pre-existing tests, or a simple new
+   * test) — lets the Test Builder's paginated question selector attach many
+   * questions in one bulk save instead of one API call per checkbox.
+   */
+  async addQuestionsBulk(testId: string, dto: BulkAddTestQuestionsDto) {
+    const uniqueIds = [...new Set(dto.questionIds)];
+
+    return this.prisma.$transaction(async (tx) => {
+      const test = await tx.test.findUniqueOrThrow({ where: { id: testId } });
+
+      const questions = await tx.question.findMany({
+        where: { id: { in: uniqueIds }, deletedAt: null },
+        select: { id: true, servingEligibility: true },
+      });
+      const foundIds = new Set(questions.map((q) => q.id));
+      const missing = uniqueIds.filter((id) => !foundIds.has(id));
+      if (missing.length > 0) {
+        throw new BadRequestException(
+          `Question(s) not found: ${missing.join(', ')}`,
+        );
+      }
+
+      if (test.bilingualRequired) {
+        const notEligible = questions.filter(
+          (q) =>
+            q.servingEligibility !== QuestionServingEligibility.FULLY_ELIGIBLE,
+        );
+        if (notEligible.length > 0) {
+          throw new BadRequestException(
+            `This test requires fully bilingual-validated questions. Not eligible: ${notEligible
+              .map((q) => q.id)
+              .join(', ')}`,
+          );
+        }
+      }
+
+      const existing = await tx.testQuestion.findMany({
+        where: { testId, questionId: { in: uniqueIds } },
+        select: { questionId: true },
+      });
+      const existingIds = new Set(existing.map((e) => e.questionId));
+      const toAdd = uniqueIds.filter((id) => !existingIds.has(id));
+
+      let nextOrder = await tx.testQuestion.count({ where: { testId } });
+      if (toAdd.length > 0) {
+        await tx.testQuestion.createMany({
+          data: toAdd.map((questionId) => ({
+            testId,
+            questionId,
+            order: nextOrder++,
+          })),
+        });
+      }
+
+      return {
+        added: toAdd,
+        alreadyInTest: uniqueIds
+          .filter((id) => existingIds.has(id))
+          .map((id) => ({
+            questionId: id,
+            message: `Question ${id} is already added to this test.`,
+          })),
+      };
     });
   }
 }

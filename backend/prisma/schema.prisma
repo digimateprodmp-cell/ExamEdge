@@ -345,6 +345,7 @@ model Test {
   bilingualRequired Boolean    @default(true)
 
   testQuestions TestQuestion[]
+  sections      TestSection[]
   attempts      TestAttempt[]
   liveTests     LiveTest[]
 
@@ -413,9 +414,10 @@ model Question {
   createdById           String?
   createdBy             User?                      @relation("QuestionCreatedBy", fields: [createdById], references: [id])
 
-  translations  QuestionTranslation[]
-  options       QuestionOption[]
-  testQuestions TestQuestion[]
+  translations   QuestionTranslation[]
+  options        QuestionOption[]
+  testQuestions  TestQuestion[]
+  tagAssignments QuestionTagAssignment[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -430,6 +432,34 @@ model Question {
   @@index([status])
   @@index([servingEligibility])
   @@map("questions")
+}
+
+// Independent of Subject/Topic: a lightweight, admin-managed label a question
+// can carry zero or more of (e.g. "Indian Polity", "UPSC", "Current Affairs"),
+// used purely for Question Bank / Test Builder filtering.
+model QuestionTag {
+  id        String   @id @default(cuid())
+  nameEn    String
+  nameHi    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assignments QuestionTagAssignment[]
+
+  @@map("question_tags")
+}
+
+model QuestionTagAssignment {
+  id            String      @id @default(cuid())
+  questionId    String
+  question      Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionTagId String
+  questionTag   QuestionTag @relation(fields: [questionTagId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@unique([questionId, questionTagId])
+  @@index([questionTagId])
+  @@map("question_tag_assignments")
 }
 
 model QuestionTranslation {
@@ -469,18 +499,45 @@ model OptionTranslation {
   @@map("option_translations")
 }
 
+// Optional grouping of a Test's questions (e.g. "Indian Polity", "History")
+// shown as a subsection during test-building and, if present, in the exam UI.
+// Nullable link from TestQuestion keeps every pre-existing question assignment
+// valid without a section.
+model TestSection {
+  id               String   @id @default(cuid())
+  testId           String
+  test             Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+  titleEn          String
+  titleHi          String?
+  order            Int      @default(0)
+  questionLimit    Int?
+  marksPerQuestion Decimal? @db.Decimal(6, 2)
+  negativeMarks    Decimal? @db.Decimal(6, 2)
+
+  testQuestions TestQuestion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([testId])
+  @@map("test_sections")
+}
+
 model TestQuestion {
-  id         String   @id @default(cuid())
+  id         String       @id @default(cuid())
   testId     String
-  test       Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+  test       Test         @relation(fields: [testId], references: [id], onDelete: Cascade)
+  sectionId  String?
+  section    TestSection? @relation(fields: [sectionId], references: [id])
   questionId String
-  question   Question @relation(fields: [questionId], references: [id])
-  order      Int      @default(0)
+  question   Question     @relation(fields: [questionId], references: [id])
+  order      Int          @default(0)
 
   testAnswers TestAnswer[]
 
   @@unique([testId, questionId])
   @@index([testId])
+  @@index([sectionId])
   @@map("test_questions")
 }
 
