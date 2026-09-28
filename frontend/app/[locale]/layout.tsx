@@ -47,8 +47,8 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`${fontSans.variable} ${fontDevanagari.variable}`}>
-      <body className={locale === 'hi' ? 'font-devanagari-active' : 'font-sans'}>
+    <html lang={locale} className={`${fontSans.variable} ${fontDevanagari.variable}`} suppressHydrationWarning>
+      <body className={locale === 'hi' ? 'font-devanagari-active' : 'font-sans'} suppressHydrationWarning>
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
             {children}
