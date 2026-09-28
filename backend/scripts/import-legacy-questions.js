@@ -15,16 +15,39 @@ const { PrismaClient, QuestionStatus, QuestionServingEligibility, QuestionSource
 const prisma = new PrismaClient();
 const BATCH_SIZE = 500;
 
+const NAMED_ENTITIES = {
+  nbsp: ' ',
+  quot: '"',
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  apos: "'",
+  rsquo: '’',
+  lsquo: '‘',
+  rdquo: '”',
+  ldquo: '“',
+  mdash: '—',
+  ndash: '–',
+  hellip: '…',
+  copy: '©',
+  reg: '®',
+  trade: '™',
+  deg: '°',
+};
+
+function decodeEntities(text) {
+  return text
+    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCodePoint(parseInt(code, 16)))
+    .replace(/&([a-z]+);/gi, (m, name) => {
+      const key = name.toLowerCase();
+      return Object.prototype.hasOwnProperty.call(NAMED_ENTITIES, key) ? NAMED_ENTITIES[key] : m;
+    });
+}
+
 function stripHtml(html) {
   if (!html) return '';
-  return html
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&quot;/gi, '"')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/&#39;/gi, "'")
+  return decodeEntities(html.replace(/<[^>]*>/g, ' '))
     .replace(/\s+/g, ' ')
     .trim();
 }

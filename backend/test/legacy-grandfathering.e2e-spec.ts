@@ -90,7 +90,9 @@ describe('Legacy grandfathering / dual-mode bilingual gate (e2e)', () => {
       const count = await prisma.question.count({
         where: { isLegacyGrandfathered: true },
       });
-      expect(count).toBe(6271);
+      // Baseline never shrinks -- later imports (e.g. the full legacy
+      // question-bank import) only ever grow this count.
+      expect(count).toBeGreaterThanOrEqual(6271);
     });
   });
 
@@ -245,7 +247,7 @@ describe('Legacy grandfathering / dual-mode bilingual gate (e2e)', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
-      expect(res.body.data.totalLegacy).toBe(6271);
+      expect(res.body.data.totalLegacy).toBeGreaterThanOrEqual(6271);
       expect(res.body.data.byStatus.MISSING_ENGLISH).toBeGreaterThanOrEqual(
         6266,
       );
