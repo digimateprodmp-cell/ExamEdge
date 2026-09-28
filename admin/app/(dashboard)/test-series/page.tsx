@@ -38,6 +38,17 @@ export default function TestSeriesPage() {
   }, [accessToken]);
 
   const columns: Column<TestSeries>[] = [
+    {
+      header: '',
+      cell: (r) =>
+        r.thumbnailUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={r.thumbnailUrl} alt="" className="h-10 w-16 rounded-md object-cover" />
+        ) : (
+          <div className="h-10 w-16 rounded-md bg-secondary" />
+        ),
+      className: 'w-20',
+    },
     { header: 'Title', cell: (r) => <span className="font-medium">{r.titleEn}</span> },
     { header: 'Price', cell: (r) => (r.isFree ? <Badge variant="success">Free</Badge> : `₹${r.price}`) },
     { header: 'Validity', cell: (r) => `${r.validityDays}d` },
@@ -56,6 +67,7 @@ export default function TestSeriesPage() {
               titleHi: r.titleHi ?? '',
               descriptionEn: r.descriptionEn ?? '',
               descriptionHi: r.descriptionHi ?? '',
+              thumbnailUrl: r.thumbnailUrl ?? '',
               isFree: r.isFree,
               price: r.price,
               validityDays: String(r.validityDays),

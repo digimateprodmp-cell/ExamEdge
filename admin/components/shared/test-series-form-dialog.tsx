@@ -22,6 +22,7 @@ interface FormValues {
   titleHi: string;
   descriptionEn: string;
   descriptionHi: string;
+  thumbnailUrl: string;
   isFree: boolean;
   price: string;
   validityDays: string;
@@ -33,6 +34,7 @@ const EMPTY: FormValues = {
   titleHi: '',
   descriptionEn: '',
   descriptionHi: '',
+  thumbnailUrl: '',
   isFree: false,
   price: '0',
   validityDays: '365',
@@ -69,6 +71,7 @@ export function TestSeriesFormDialog({
         titleHi: values.titleHi || undefined,
         descriptionEn: values.descriptionEn || undefined,
         descriptionHi: values.descriptionHi || undefined,
+        thumbnailUrl: values.thumbnailUrl || undefined,
         isFree: values.isFree,
         price: values.isFree ? 0 : Number(values.price) || 0,
         validityDays: Number(values.validityDays) || 365,
@@ -112,6 +115,27 @@ export function TestSeriesFormDialog({
             <div className="space-y-1.5">
               <Label>Description (Hindi)</Label>
               <Textarea value={values.descriptionHi} onChange={(e) => setValues({ ...values, descriptionHi: e.target.value })} />
+            </div>
+          </div>
+          <div className="grid grid-cols-[1fr_auto] gap-3">
+            <div className="space-y-1.5">
+              <Label>Thumbnail URL</Label>
+              <Input
+                value={values.thumbnailUrl}
+                onChange={(e) => setValues({ ...values, thumbnailUrl: e.target.value })}
+                placeholder="https://..."
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Preview</Label>
+              <div className="flex h-9 w-16 items-center justify-center overflow-hidden rounded-md border border-border bg-secondary/50">
+                {values.thumbnailUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={values.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-[10px] text-muted-foreground">None</span>
+                )}
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-4 items-end gap-3">

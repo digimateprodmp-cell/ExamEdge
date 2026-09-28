@@ -17,7 +17,12 @@ export function TestSeriesCard({ series }: { series: TestSeries }) {
   return (
     <Card className="flex h-full flex-col overflow-hidden transition-shadow hover:shadow-md">
       <div className="flex h-32 items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10">
-        <BookOpen className="h-10 w-10 text-primary" />
+        {series.thumbnailUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={series.thumbnailUrl} alt={title} className="h-full w-full object-cover" />
+        ) : (
+          <BookOpen className="h-10 w-10 text-primary" />
+        )}
       </div>
       <CardContent className="flex flex-1 flex-col gap-3 pt-5">
         <div className="flex items-start justify-between gap-2">

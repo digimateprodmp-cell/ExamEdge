@@ -438,11 +438,14 @@ model Question {
 // can carry zero or more of (e.g. "Indian Polity", "UPSC", "Current Affairs"),
 // used purely for Question Bank / Test Builder filtering.
 model QuestionTag {
-  id        String   @id @default(cuid())
-  nameEn    String
-  nameHi    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  nameEn      String
+  nameHi      String?
+  // Set only by the legacy `questiontags` import, to make it idempotent
+  // (re-running the import must not create duplicate tags).
+  legacyTagId Int?     @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   assignments QuestionTagAssignment[]
 

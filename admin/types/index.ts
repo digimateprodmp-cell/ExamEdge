@@ -52,6 +52,7 @@ export interface TestSeries {
   titleHi?: string | null;
   descriptionEn?: string | null;
   descriptionHi?: string | null;
+  thumbnailUrl?: string | null;
   validityDays: number;
   isFree: boolean;
   price: string;
