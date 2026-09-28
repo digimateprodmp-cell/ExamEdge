@@ -39,6 +39,57 @@ export class ExamsService {
     });
   }
 
+  async findOneCyclePublic(id: string) {
+    const cycle = await this.prisma.examCycle.findFirst({
+      where: { id, isActive: true },
+      include: { exam: true },
+    });
+    if (!cycle) throw new NotFoundException('Exam cycle not found');
+    return cycle;
+  }
+
+  /** The active syllabus version for a cycle, with its Subject/Topic tree — the read path the student-facing Syllabus tab needs. */
+  async findActiveSyllabusPublic(examCycleId: string) {
+    const version = await this.prisma.syllabusVersion.findFirst({
+      where: { examCycleId, isActive: true },
+      orderBy: { version: 'desc' },
+      include: {
+        topics: {
+          include: { topic: { include: { subject: true } } },
+        },
+      },
+    });
+    if (!version) return null;
+
+    const bySubject = new Map<
+      string,
+      { subjectId: string; nameEn: string; nameHi: string | null; topics: { id: string; nameEn: string; nameHi: string | null; weight: number }[] }
+    >();
+    for (const st of version.topics) {
+      const subject = st.topic.subject;
+      if (!bySubject.has(subject.id)) {
+        bySubject.set(subject.id, {
+          subjectId: subject.id,
+          nameEn: subject.nameEn,
+          nameHi: subject.nameHi,
+          topics: [],
+        });
+      }
+      bySubject.get(subject.id)!.topics.push({
+        id: st.topic.id,
+        nameEn: st.topic.nameEn,
+        nameHi: st.topic.nameHi,
+        weight: st.weight,
+      });
+    }
+
+    return {
+      id: version.id,
+      version: version.version,
+      subjects: Array.from(bySubject.values()),
+    };
+  }
+
   // ---- Admin CRUD: Exam ----
 
   findAllAdmin() {

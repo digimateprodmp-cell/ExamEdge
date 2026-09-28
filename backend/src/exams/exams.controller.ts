@@ -36,6 +36,18 @@ export class ExamsController {
     return this.examsService.findCyclesPublic(id);
   }
 
+  @Public()
+  @Get('cycles/:cycleId')
+  findOneCyclePublic(@Param('cycleId') cycleId: string) {
+    return this.examsService.findOneCyclePublic(cycleId);
+  }
+
+  @Public()
+  @Get('cycles/:cycleId/syllabus')
+  findActiveSyllabusPublic(@Param('cycleId') cycleId: string) {
+    return this.examsService.findActiveSyllabusPublic(cycleId);
+  }
+
   @Roles(Role.ADMIN)
   @Get('admin')
   findAllAdmin() {

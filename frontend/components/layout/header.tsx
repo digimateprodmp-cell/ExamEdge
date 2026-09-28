@@ -20,10 +20,13 @@ import {
 import { useAuth } from '@/hooks/use-auth';
 
 const NAV_LINKS = [
-  { href: '/test-series', key: 'testSeries' },
+  { href: '/dashboard', key: 'dashboard' },
+  { href: '/my-exams', key: 'myExams' },
+  { href: '/practice', key: 'practice' },
+  { href: '/live-tests', key: 'liveTests' },
   { href: '/current-affairs', key: 'currentAffairs' },
   { href: '/notes', key: 'notes' },
-  { href: '/blogs', key: 'blogs' },
+  { href: '/performance', key: 'performance' },
 ] as const;
 
 export function Header() {

@@ -24,8 +24,11 @@ export class TestSeriesController {
 
   @Public()
   @Get()
-  findAllPublic(@Query() pagination: PaginationDto) {
-    return this.testSeriesService.findAllPublic(pagination);
+  findAllPublic(
+    @Query() pagination: PaginationDto,
+    @Query('courseId') courseId?: string,
+  ) {
+    return this.testSeriesService.findAllPublic(pagination, courseId);
   }
 
   @Roles(Role.ADMIN)

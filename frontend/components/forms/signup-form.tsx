@@ -63,7 +63,7 @@ export function SignupForm() {
         referralCode: values.referralCode || undefined,
       });
       toast.success(t('registerSuccess'));
-      router.push('/dashboard');
+      router.push('/onboarding/exams');
     } catch (err) {
       setServerError(err instanceof ApiError ? err.message : 'Registration failed');
     }

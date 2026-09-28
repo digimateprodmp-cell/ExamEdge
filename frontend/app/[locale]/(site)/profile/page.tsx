@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { CheckCircle2, XCircle } from 'lucide-react';
+import { Link } from '@/i18n/navigation';
 import { RequireAuth } from '@/components/shared/require-auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,6 +45,17 @@ function ProfileContent() {
           <p className="text-sm text-muted-foreground">{user.role}</p>
         </div>
       </div>
+
+      <Link
+        href="/my-exams"
+        className="mb-6 flex items-center justify-between rounded-2xl border border-border bg-card p-5 hover:shadow-sm"
+      >
+        <div>
+          <p className="font-semibold">My Competitive Exams</p>
+          <p className="text-sm text-muted-foreground">Add, remove, or switch your selected exams</p>
+        </div>
+        <span className="text-sm font-medium text-primary">Manage →</span>
+      </Link>
 
       <Card className="mb-6">
         <CardHeader>

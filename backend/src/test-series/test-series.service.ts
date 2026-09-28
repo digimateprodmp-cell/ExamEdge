@@ -13,12 +13,17 @@ import {
 export class TestSeriesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private async paginate(pagination: PaginationDto, publicOnly: boolean) {
+  private async paginate(
+    pagination: PaginationDto,
+    publicOnly: boolean,
+    courseId?: string,
+  ) {
     const { page, limit, search } = pagination;
     const where = {
       deletedAt: null,
       ...(publicOnly ? { isPublished: true } : {}),
       ...(search ? { titleEn: { contains: search } } : {}),
+      ...(courseId ? { courseId } : {}),
     };
 
     const [items, total] = await this.prisma.$transaction([
@@ -34,8 +39,8 @@ export class TestSeriesService {
     return { items, ...buildPaginationMeta(total, page, limit) };
   }
 
-  findAllPublic(pagination: PaginationDto) {
-    return this.paginate(pagination, true);
+  findAllPublic(pagination: PaginationDto, courseId?: string) {
+    return this.paginate(pagination, true, courseId);
   }
 
   findAllAdmin(pagination: PaginationDto) {

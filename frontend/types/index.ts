@@ -289,6 +289,26 @@ export interface StudentExamProfile {
   examCycle: ExamCycle;
 }
 
+export interface SyllabusTopicSummary {
+  id: string;
+  nameEn: string;
+  nameHi?: string | null;
+  weight: number;
+}
+
+export interface SyllabusSubjectSummary {
+  subjectId: string;
+  nameEn: string;
+  nameHi?: string | null;
+  topics: SyllabusTopicSummary[];
+}
+
+export interface ExamSyllabus {
+  id: string;
+  version: number;
+  subjects: SyllabusSubjectSummary[];
+}
+
 export type LiveTestStatusValue =
   | 'UPCOMING'
   | 'COUNTDOWN'
